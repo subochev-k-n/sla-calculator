@@ -89,20 +89,18 @@ public class DeadlineCalculator {
      */
     private ZonedDateTime computeDurationDeadline(DurationAction action, ZonedDateTime startTime) {
         if (action.isAroundTheClock()) {
-            // 24/7 — просто прибавляем длительность
             return startTime.plus(action.duration());
         }
 
+        var isBusinessDays = "DAYS".equalsIgnoreCase(action.precision());
         var remainingMinutes = (double) action.duration().toSeconds() / 60.0;
+        var remainingBusinessDays = isBusinessDays ? action.duration().toDays() : 0;
         var current = startTime;
         var zone = startTime.getZone();
 
-        // Определяем активное окно для текущего времени
-        while (remainingMinutes > 0) {
+        while (isBusinessDays ? remainingBusinessDays > 0 : remainingMinutes > 0) {
             var tw = findActiveWindow(action.timeWindows(), current);
             if (tw.isEmpty()) {
-                // Нет активного окна — перейти к следующему дню,
-                // к началу рабочего времени
                 current = current.toLocalDate().plusDays(1).atStartOfDay(zone);
                 continue;
             }
@@ -111,14 +109,11 @@ public class DeadlineCalculator {
             var localDate = current.toLocalDate();
             var localTime = current.toLocalTime();
 
-            // Если мы в нерабочее время (до начала окна), прыгаем к началу окна
             if (localTime.isBefore(window.dayStart())) {
                 current = localDate.atTime(window.dayStart()).atZone(zone);
                 localTime = window.dayStart();
             }
 
-            // Если день нерабочий — прыгаем к началу следующего рабочего дня
-            var dateStr = localDate.toString();
             var zoneStr = zone.getId();
             if (!window.weekDays().contains(localDate.getDayOfWeek())
                 || (!window.includeHolidays() && !calendar.isBusinessDay(localDate, zoneStr))) {
@@ -126,31 +121,31 @@ public class DeadlineCalculator {
                 continue;
             }
 
-            // Доступные минуты в этом дне
             var effectiveEnd = calendar.isShortenedDay(localDate, zoneStr)
                 ? window.dayEnd().minusHours(1)
                 : window.dayEnd();
-
             var dayEndTime = localDate.atTime(effectiveEnd).atZone(zone);
 
             if (current.isAfter(dayEndTime)) {
-                // Мы уже после конца рабочего дня — перейти к следующему
                 current = localDate.plusDays(1).atStartOfDay(zone);
                 continue;
             }
 
-            // Сколько минут доступно в этом дне (от current до dayEnd)
-            var availableMinutes = Duration.between(current, dayEndTime).toMinutes();
-
-            if (availableMinutes >= remainingMinutes) {
-                // Дедлайн в этом дне
-                var deadlineInstant = current.plus(Duration.ofMinutes((long) remainingMinutes));
-                return adjustForDST(deadlineInstant, zone);
+            if (isBusinessDays) {
+                remainingBusinessDays--;
+                if (remainingBusinessDays <= 0) {
+                    return adjustForDST(dayEndTime, zone);
+                }
+                current = localDate.plusDays(1).atStartOfDay(zone);
+            } else {
+                var availableMinutes = Duration.between(current, dayEndTime).toMinutes();
+                if (availableMinutes >= remainingMinutes) {
+                    var deadlineInstant = current.plus(Duration.ofMinutes((long) remainingMinutes));
+                    return adjustForDST(deadlineInstant, zone);
+                }
+                remainingMinutes -= availableMinutes;
+                current = localDate.plusDays(1).atStartOfDay(zone);
             }
-
-            // Весь день не хватил — вычитаем доступные минуты и идём дальше
-            remainingMinutes -= availableMinutes;
-            current = localDate.plusDays(1).atStartOfDay(zone);
         }
 
         return current;
