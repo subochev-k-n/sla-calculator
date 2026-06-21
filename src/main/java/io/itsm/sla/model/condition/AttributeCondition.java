@@ -32,11 +32,25 @@ public record AttributeCondition(String key, Operator operator, String value) im
         };
     }
 
+    /**
+     * Порядок уровней urgency для строкового сравнения.
+     */
+    private static final java.util.List<String> URGENCY_ORDER = java.util.List.of(
+        "critical", "high", "medium", "low"
+    );
+
     private int compareNumeric(String a, String b) {
         try {
             return Long.compare(Long.parseLong(a), Long.parseLong(b));
         } catch (NumberFormatException e) {
-            return a.compareTo(b);
+            // Пробуем сравнить как urgency
+            int ia = URGENCY_ORDER.indexOf(a.toLowerCase());
+            int ib = URGENCY_ORDER.indexOf(b.toLowerCase());
+            if (ia >= 0 && ib >= 0) {
+                // Инвертируем: чем меньше индекс, тем выше приоритет
+                return Integer.compare(ib, ia);
+            }
+            return a.compareToIgnoreCase(b);
         }
     }
 }

@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SLA Calculator — расчёт крайнего срока</title>
+<style>
+  :root {
+    --bg: #f4f6f9;
+    --card: #ffffff;
+    --border: #d1d5db;
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --text: #1f2937;
+    --text-muted: #6b7280;
+    --success: #16a34a;
+    --danger: #dc2626;
+    --warn-bg: #fef3c7;
+    --warn-border: #f59e0b;
+    --radius: 10px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    padding: 24px;
+    min-height: 100vh;
+  }
+  .container { max-width: 720px; margin: 0 auto; }
+  h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .subtitle {
+    color: var(--text-muted);
+    margin-bottom: 24px;
+    font-size: 0.9rem;
+  }
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .card h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  .form-group { margin-bottom: 16px; }
+  .form-group:last-child { margin-bottom: 0; }
+  label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 6px;
+    color: var(--text);
+  }
+  select, input[type="datetime-local"], button {
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 0.95rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card);
+    color: var(--text);
+    transition: border-color 0.15s, box-shadow 0.15s;
+    font-family: inherit;
+  }
+  select:focus, input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+  }
+  .scenario-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+    padding: 6px 10px;
+    background: #f9fafb;
+    border-radius: 6px;
+  }
+  button {
+    background: var(--primary);
+    color: white;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  button:hover { background: var(--primary-hover); }
+  button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  .spinner {
+    display: inline-block;
+    width: 18px; height: 18px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .result-card {
+    display: none;
+    border-left: 4px solid var(--primary);
+  }
+  .result-card.visible { display: block; }
+  .result-card.success { border-left-color: var(--success); }
+  .result-card.error { border-left-color: var(--danger); }
+
+  .result-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .result-item {
+    padding: 12px;
+    background: #f9fafb;
+    border-radius: 8px;
+  }
+  .result-item.full { grid-column: 1 / -1; }
+  .result-item .label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--text-muted);
+    margin-bottom: 2px;
+  }
+  .result-item .value {
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+  .result-item .value.big {
+    font-size: 1.35rem;
+    color: var(--primary);
+  }
+  .result-item .value.overdue { color: var(--danger); }
+  .result-item .value.on-time { color: var(--success); }
+
+  .error-message {
+    color: var(--danger);
+    font-weight: 500;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  .badge-success { background: #dcfce7; color: #166534; }
+  .badge-danger { background: #fee2e2; color: #991b1b; }
+
+  @media (max-width: 640px) {
+    body { padding: 12px; }
+    .card { padding: 16px; }
+    .result-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>⏱️ SLA Calculator</h1>
+  <p class="subtitle">Расчёт крайнего срока выполнения работы с учётом SLA, выходных и праздников</p>
+
+  <div class="card">
+    <h2>📋 Параметры запроса</h2>
+    <form id="slaForm" autocomplete="off">
+      <div class="form-group">
+        <label for="scenario">Тип работы / SLA</label>
+        <select id="scenario" name="scenarioId" required>
+          <option value="" disabled selected>— Выберите сценарий —</option>
+        </select>
+        <div id="scenarioDesc" class="scenario-desc">&nbsp;</div>
+      </div>
+      <div class="form-group">
+        <label for="startTime">Дата и время начала работы</label>
+        <input type="datetime-local" id="startTime" name="startTime" required>
+      </div>
+      <div class="form-group">
+        <button type="submit" id="calcBtn">
+          <span id="btnText">Рассчитать крайний срок</span>
+          <span id="btnSpinner" class="spinner" style="display:none"></span>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div id="resultCard" class="card result-card">
+    <h2>📊 Результат расчёта</h2>
+    <div id="resultContent"></div>
+  </div>
+</div>
+
+<script>
+const SCENARIO_MAP = {};
+
+async function loadScenarios() {
+  try {
+    const res = await fetch('/api/v1/sla/scenarios');
+    const scenarios = await res.json();
+    const sel = document.getElementById('scenario');
+    scenarios.forEach(s => {
+      SCENARIO_MAP[s.id] = s;
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = s.name;
+      sel.appendChild(opt);
+    });
+  } catch (e) {
+    console.error('Failed to load scenarios', e);
+  }
+}
+
+function formatDuration(minutes) {
+  if (minutes <= 0) return '—';
+  if (minutes < 60) return minutes + ' мин';
+  const h = Math.floor(minutes / 60);
+  const d = Math.floor(h / 8);
+  const rh = h % 8;
+  const rm = minutes % 60;
+  let parts = [];
+  if (d > 0) parts.push(d + ' д');
+  if (rh > 0) parts.push(rh + ' ч');
+  if (rm > 0) parts.push(rm + ' мин');
+  return parts.join(' ');
+}
+
+document.getElementById('scenario').addEventListener('change', function() {
+  const s = SCENARIO_MAP[this.value];
+  document.getElementById('scenarioDesc').textContent = s ? s.description : '—';
+});
+
+document.getElementById('slaForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const scenarioId = document.getElementById('scenario').value;
+  const startTimeRaw = document.getElementById('startTime').value;
+  const btn = document.getElementById('calcBtn');
+  const btnText = document.getElementById('btnText');
+  const spinner = document.getElementById('btnSpinner');
+
+  if (!scenarioId) { alert('Выберите тип работы'); return; }
+  if (!startTimeRaw) { alert('Укажите дату и время начала'); return; }
+
+  // Преобразуем datetime-local в ISO с таймзоной
+  const localDate = new Date(startTimeRaw);
+  const offset = -localDate.getTimezoneOffset();
+  const sign = offset >= 0 ? '+' : '-';
+  const pad2 = n => String(n).padStart(2, '0');
+  const zone = sign + pad2(Math.floor(Math.abs(offset)/60)) + ':' + pad2(Math.abs(offset)%60);
+  const startTime = localDate.getFullYear() + '-' +
+    pad2(localDate.getMonth()+1) + '-' +
+    pad2(localDate.getDate()) + 'T' +
+    pad2(localDate.getHours()) + ':' +
+    pad2(localDate.getMinutes()) + ':00' + zone;
+
+  // Показываем spinner
+  btn.disabled = true;
+  btnText.textContent = 'Расчёт...';
+  spinner.style.display = 'inline-block';
+
+  const resultCard = document.getElementById('resultCard');
+  resultCard.classList.remove('visible', 'success', 'error');
+
+  try {
+    const res = await fetch('/api/v1/sla/scenario/calculate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scenarioId, startTime })
+    });
+    const data = await res.json();
+
+    if (res.ok) {
+      resultCard.classList.add('visible', 'success');
+      const overdue = data.isOverdue;
+      document.getElementById('resultContent').innerHTML = `
+        <div class="result-grid">
+          <div class="result-item full">
+            <div class="label">Тип обращения</div>
+            <div class="value">${data.scenarioName || data.slaRuleName}</div>
+          </div>
+          <div class="result-item">
+            <div class="label">Начало работы</div>
+            <div class="value">${data.startTime}</div>
+          </div>
+          <div class="result-item">
+            <div class="label">Крайний срок</div>
+            <div class="value big ${overdue ? 'overdue' : 'on-time'}">${data.deadline}</div>
+          </div>
+          <div class="result-item">
+            <div class="label">Длительность по SLA</div>
+            <div class="value">${formatDuration(data.durationMinutes)}</div>
+          </div>
+          <div class="result-item">
+            <div class="label">Статус</div>
+            <div class="value">
+              ${overdue
+                ? '<span class="badge badge-danger">⚠️ Просрочено</span>'
+                : '<span class="badge badge-success">✅ В срок</span>'}
+            </div>
+          </div>
+          <div class="result-item full" style="font-size:0.85rem;color:var(--text-muted)">
+            ${data.description || ''}
+          </div>
+        </div>`;
+    } else {
+      resultCard.classList.add('visible', 'error');
+      document.getElementById('resultContent').innerHTML =
+        `<p class="error-message">${data.error || 'Ошибка расчёта'}</p>`;
+    }
+  } catch (e) {
+    resultCard.classList.add('visible', 'error');
+    document.getElementById('resultContent').innerHTML =
+      `<p class="error-message">Ошибка соединения: ${e.message}</p>`;
+  } finally {
+    btn.disabled = false;
+    btnText.textContent = 'Рассчитать крайний срок';
+    spinner.style.display = 'none';
+  }
+});
+
+// Устанавливаем текущее время
+const now = new Date();
+now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+document.getElementById('startTime').value = now.toISOString().slice(0, 16);
+
+loadScenarios();
+</script>
+</body>
+</html>

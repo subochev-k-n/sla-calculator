@@ -29,6 +29,7 @@ public record DurationAction(
     /**
      * Проверить, является ли SLA круглосуточным (24/7).
      */
+    @com.fasterxml.jackson.annotation.JsonIgnore
     public boolean isAroundTheClock() {
         return timeWindows.isEmpty() || timeWindows.stream().anyMatch(tw ->
             tw.weekDays().size() == 7
@@ -41,6 +42,7 @@ public record DurationAction(
     /**
      * Длительность в минутах.
      */
+    @com.fasterxml.jackson.annotation.JsonIgnore
     public long durationMinutes() {
         return duration.toMinutes();
     }

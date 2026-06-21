@@ -3,7 +3,7 @@ package io.itsm.sla.service;
 import io.itsm.sla.calendar.BusinessDayCalendar;
 import io.itsm.sla.model.*;
 import io.itsm.sla.model.action.*;
-import lombok.RequiredArgsConstructor;
+import io.itsm.sla.port.SLARuleLoader;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.*;
@@ -18,11 +18,29 @@ import java.util.Optional;
  * 2. Вычисляет дедлайн с учётом TimeWindow, праздников и DST
  */
 @Slf4j
-@RequiredArgsConstructor
 public class DeadlineCalculator {
 
-    private final List<SLARule> rules;
+    private final SLARuleLoader ruleLoader;
     private final BusinessDayCalendar calendar;
+
+        /**
+     * Основной конструктор — правила загружаются через {@link SLARuleLoader}.
+     */
+    public DeadlineCalculator(SLARuleLoader ruleLoader, BusinessDayCalendar calendar) {
+        this.ruleLoader = ruleLoader;
+        this.calendar = calendar;
+    }
+
+    /**
+     * Конструктор для тестов — правила передаются списком напрямую.
+     */
+    public DeadlineCalculator(List<SLARule> rules, BusinessDayCalendar calendar) {
+        this.ruleLoader = new SLARuleLoader() {
+            @Override public void saveAll(List<SLARule> r) {}
+            @Override public List<SLARule> loadAll() { return rules; }
+        };
+        this.calendar = calendar;
+    }
 
     /**
      * Вычислить дедлайн для контекста обращения.
@@ -173,7 +191,7 @@ public class DeadlineCalculator {
     // ---- вспомогательные методы ----
 
     private Optional<SLARule> findRule(SLAContext context) {
-        return rules.stream()
+        return ruleLoader.loadAll().stream()
             .filter(SLARule::active)
             .sorted(Comparator.comparingInt(SLARule::priority))
             .filter(rule -> rule.matches(context))

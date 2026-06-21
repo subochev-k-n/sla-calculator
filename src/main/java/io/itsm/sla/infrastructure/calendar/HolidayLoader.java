@@ -1,12 +1,11 @@
 package io.itsm.sla.infrastructure.calendar;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.itsm.sla.calendar.BusinessDayCalendar;
 import io.itsm.sla.calendar.Holiday;
 import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 
@@ -20,12 +19,19 @@ import java.util.List;
  */
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class HolidayLoader {
 
     private final ObjectMapper yamlObjectMapper;
     private final ResourceLoader resourceLoader;
     private final BusinessDayCalendar calendar;
+
+    public HolidayLoader(@Qualifier("yamlObjectMapper") ObjectMapper yamlObjectMapper,
+                         ResourceLoader resourceLoader,
+                         BusinessDayCalendar calendar) {
+        this.yamlObjectMapper = yamlObjectMapper;
+        this.resourceLoader = resourceLoader;
+        this.calendar = calendar;
+    }
 
     @PostConstruct
     public void loadHolidays() {

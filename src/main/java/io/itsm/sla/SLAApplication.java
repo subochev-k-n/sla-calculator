@@ -2,7 +2,7 @@ package io.itsm.sla;
 
 import io.itsm.sla.calendar.BusinessDayCalendar;
 import io.itsm.sla.config.YamlSLAImporter;
-import io.itsm.sla.model.SLARule;
+import io.itsm.sla.port.SLARuleLoader;
 import io.itsm.sla.service.DeadlineCalculator;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -43,8 +43,8 @@ public class SLAApplication {
 
     @Bean
     public DeadlineCalculator deadlineCalculator(
-            List<SLARule> rules,
+            SLARuleLoader ruleLoader,
             BusinessDayCalendar calendar) {
-        return new DeadlineCalculator(rules, calendar);
+        return new DeadlineCalculator(ruleLoader, calendar);
     }
 }

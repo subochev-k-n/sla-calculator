@@ -5,6 +5,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.itsm.sla.infrastructure.persistence.JacksonActionModule;
 import io.itsm.sla.infrastructure.persistence.JacksonConditionModule;
+import org.springframework.context.annotation.Primary;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
@@ -23,6 +24,8 @@ public class SLAConfig {
     public ObjectMapper yamlObjectMapper() {
         var mapper = new ObjectMapper(new YAMLFactory());
         mapper.registerModule(new JavaTimeModule());
+        mapper.registerModule(new JacksonConditionModule());
+        mapper.registerModule(new JacksonActionModule());
         return mapper;
     }
 
@@ -30,6 +33,7 @@ public class SLAConfig {
      * JSON ObjectMapper для сериализации правил в БД.
      * Поддерживает полиморфные Condition и Action.
      */
+    @Primary
     @Bean
     public ObjectMapper jsonObjectMapper() {
         var mapper = new ObjectMapper();
