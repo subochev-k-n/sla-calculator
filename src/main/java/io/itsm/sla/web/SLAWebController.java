@@ -18,9 +18,6 @@ import java.util.stream.Stream;
 
 /**
  * REST-контроллер предустановленных сценариев SLA для веб-интерфейса.
- * <p>
- * Веб-интерфейс (index.html) — статический файл, обслуживается из
- * {@code src/main/resources/static/index.html} по корневому пути.
  */
 @RestController
 @RequiredArgsConstructor
@@ -29,7 +26,7 @@ public class SLAWebController {
     private final DeadlineCalculator calculator;
 
     /**
-     * Карта предустановленных сценариев SLA для веб-интерфейса.
+     * Карта предустановленных сценариев SLA.
      */
     private static final Map<String, SLAScenarioDTO> SCENARIOS = new LinkedHashMap<>();
 
@@ -47,18 +44,17 @@ public class SLAWebController {
         ).forEach(s -> SCENARIOS.put(s.id(), s));
     }
 
-    /**
-     * GET /api/v1/sla/scenarios — список предустановленных сценариев.
-     */
     @GetMapping(value = "/api/v1/sla/scenarios", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<SLAScenarioDTO>> listScenarios() {
         return ResponseEntity.ok(List.copyOf(SCENARIOS.values()));
     }
 
     /**
-     * POST /api/v1/sla/scenario/calculate — расчёт дедлайна по сценарию.
+     * POST /api/v1/sla/scenario/calculate — расчёт дедлайна.
      * <p>
-     * Принимает JSON: { "scenarioId": "...", "startTime": "2026-06-21T14:00:00+03:00" }
+     * Принимает JSON с полями сценария. Если передан только scenarioId —
+     * используется предустановленный сценарий. Если переданы поля напрямую
+     * (ticketType, urgency, category, duration) — используется кастомный сценарий.
      */
     @PostMapping(value = "/api/v1/sla/scenario/calculate",
                  consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -67,12 +63,23 @@ public class SLAWebController {
             @RequestBody Map<String, String> request) {
 
         var scenarioId = request.get("scenarioId");
-        var scenario = SCENARIOS.get(scenarioId);
-        if (scenario == null) {
-            return ResponseEntity.badRequest().body(Map.of(
-                "error", "Неизвестный сценарий: " + scenarioId
-            ));
+        SLAScenarioDTO scenario = null;
+
+        if (scenarioId != null && SCENARIOS.containsKey(scenarioId)) {
+            scenario = SCENARIOS.get(scenarioId);
         }
+
+        // Строим контекст из переданных параметров (либо из предустановленного сценария)
+        var ticketType = valueOr(request.get("ticketType"),
+            scenario != null ? scenario.ticketType() : "incident");
+        var urgency = valueOr(request.get("urgency"),
+            scenario != null ? scenario.urgency() : "");
+        var category = valueOr(request.get("category"),
+            scenario != null ? scenario.category() : "");
+        var description = valueOr(request.get("description"),
+            scenario != null ? scenario.description() : "");
+        var scenarioName = valueOr(request.get("scenarioName"),
+            scenario != null ? scenario.name() : ticketType);
 
         var startTimeStr = request.get("startTime");
         var startTime = startTimeStr != null && !startTimeStr.isBlank()
@@ -80,15 +87,11 @@ public class SLAWebController {
             : ZonedDateTime.now();
 
         var attrs = new java.util.HashMap<String, String>();
-        if (scenario.urgency() != null && !scenario.urgency().isBlank()) {
-            attrs.put("urgency", scenario.urgency());
-        }
-        if (scenario.category() != null && !scenario.category().isBlank()) {
-            attrs.put("category", scenario.category());
-        }
+        if (urgency != null && !urgency.isBlank()) attrs.put("urgency", urgency);
+        if (category != null && !category.isBlank()) attrs.put("category", category);
 
         var ctx = SLAContext.builder()
-            .ticketType(scenario.ticketType())
+            .ticketType(ticketType)
             .attributes(attrs)
             .build();
 
@@ -103,8 +106,8 @@ public class SLAWebController {
 
         var fmt = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm (VV)");
         var result = new LinkedHashMap<String, Object>();
-        result.put("scenarioId", scenario.id());
-        result.put("scenarioName", scenario.name());
+        result.put("scenarioId", scenarioId != null ? scenarioId : "custom");
+        result.put("scenarioName", scenarioName);
         result.put("startTime", startTime.format(fmt));
         result.put("deadline", deadline.deadline().format(fmt));
         result.put("deadlineIso", deadline.deadline().toString());
@@ -112,7 +115,11 @@ public class SLAWebController {
         result.put("slaRuleName", deadline.slaRuleName());
         result.put("durationMinutes", deadline.durationMinutes());
         result.put("isOverdue", deadline.isOverdue(ZonedDateTime.now()));
-        result.put("description", scenario.description());
+        result.put("description", description);
         return ResponseEntity.ok(result);
+    }
+
+    private static String valueOr(String first, String fallback) {
+        return (first != null && !first.isBlank()) ? first : fallback;
     }
 }

@@ -550,11 +550,23 @@ document.getElementById('slaForm').addEventListener('submit', async function(e) 
   const resultCard = document.getElementById('resultCard');
   resultCard.classList.remove('visible', 'success', 'error');
 
+  // Для кастомных сценариев передаём полные параметры, а не только ID
+  const scenarioObj = SCENARIO_MAP[scenarioId];
+  const body = { scenarioId, startTime };
+
+  if (scenarioObj && scenarioObj._custom) {
+    body.ticketType = scenarioObj.ticketType || 'incident';
+    body.urgency = scenarioObj.urgency || '';
+    body.category = scenarioObj.category || '';
+    body.description = scenarioObj.description || '';
+    body.scenarioName = scenarioObj.name || scenarioId;
+  }
+
   try {
     const res = await fetch('/api/v1/sla/scenario/calculate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ scenarioId, startTime })
+      body: JSON.stringify(body)
     });
     const data = await res.json();
 
