@@ -55,10 +55,12 @@ public class DeadlineCalculator {
                 "No matching SLA rule for context: " + context));
 
         log.debug("Computing deadline for rule '{}' (priority {})", rule.id(), rule.priority());
-        var deadline = computeActionDeadline(rule.action(), startTime);
+        var effectiveStart = computeEffectiveStart(rule.action(), startTime);
+        var deadline = computeActionDeadline(rule.action(), effectiveStart);
 
         return SLADeadline.builder()
             .deadline(deadline)
+            .effectiveStartTime(effectiveStart)
             .slaRuleId(rule.id())
             .slaRuleName(rule.name())
             .durationMinutes(extractDurationMinutes(rule.action()))
@@ -181,6 +183,36 @@ public class DeadlineCalculator {
      */
     private ZonedDateTime computeCompositeDeadline(CompositeAction action, ZonedDateTime startTime) {
         return computeActionDeadline(action.first(), startTime);
+    }
+
+    private ZonedDateTime computeEffectiveStart(SLAAction action, ZonedDateTime startTime) {
+        return switch (action) {
+            case DurationAction da -> computeEffectiveStartDuration(da, startTime);
+            case FixedDeadlineAction fa -> startTime;
+            case EscalateAction ea -> computeEffectiveStart(ea.escalateTo(), startTime);
+            case CompositeAction ca -> computeEffectiveStart(ca.first(), startTime);
+        };
+    }
+
+    private ZonedDateTime computeEffectiveStartDuration(DurationAction action, ZonedDateTime startTime) {
+        if (action.isAroundTheClock()) return startTime;
+        var current = startTime;
+        var zone = startTime.getZone();
+        for (int i = 0; i < 100; i++) {
+            var tw = findActiveWindow(action.timeWindows(), current);
+            if (tw.isEmpty()) { current = current.toLocalDate().plusDays(1).atStartOfDay(zone); continue; }
+            var w = tw.get();
+            var ld = current.toLocalDate();
+            var lt = current.toLocalTime();
+            var zs = zone.getId();
+            if (!w.weekDays().contains(ld.getDayOfWeek()) || (!w.includeHolidays() && !calendar.isBusinessDay(ld, zs))) {
+                current = ld.plusDays(1).atStartOfDay(zone); continue;
+            }
+            if (lt.isBefore(w.dayStart())) return ld.atTime(w.dayStart()).atZone(zone);
+            if (!lt.isAfter(w.dayEnd())) return current;
+            current = ld.plusDays(1).atStartOfDay(zone);
+        }
+        return startTime;
     }
 
     // ---- вспомогательные методы ----

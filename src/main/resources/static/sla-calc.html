@@ -639,9 +639,15 @@ document.getElementById('slaForm').addEventListener('submit', async function(e) 
             <div class="value">${data.scenarioName || data.slaRuleName}</div>
           </div>
           <div class="result-item">
-            <div class="label">Начало работы</div>
+            <div class="label">Время запроса</div>
             <div class="value">${data.startTime}</div>
           </div>
+          ${data.effectiveStartTime && data.effectiveStartTime !== data.startTime
+            ? `<div class="result-item">
+                <div class="label">Фактическое начало SLA</div>
+                <div class="value on-time">${data.effectiveStartTime}</div>
+               </div>`
+            : ''}
           <div class="result-item">
             <div class="label">Крайний срок</div>
             <div class="value big ${overdue ? 'overdue' : 'on-time'}">${data.deadline}</div>

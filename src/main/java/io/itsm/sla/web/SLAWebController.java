@@ -113,6 +113,7 @@ public class SLAWebController {
         result.put("scenarioId", scenarioId != null ? scenarioId : "custom");
         result.put("scenarioName", scenarioName);
         result.put("startTime", startTime.format(fmt));
+        result.put("effectiveStartTime", deadline.effectiveStartTime() != null ? deadline.effectiveStartTime().format(fmt) : startTime.format(fmt));
         result.put("deadline", deadline.deadline().format(fmt));
         result.put("deadlineIso", deadline.deadline().toString());
         result.put("slaRuleId", deadline.slaRuleId());
