@@ -372,8 +372,18 @@ let currentEditId = null;
 
 // ---- Загрузка/сохранение кастомных сценариев в localStorage ----
 function loadCustomScenarios() {
-  try { return JSON.parse(localStorage.getItem(CUSTOM_SCENARIOS_KEY)) || []; }
-  catch { return []; }
+  try {
+    const raw = JSON.parse(localStorage.getItem(CUSTOM_SCENARIOS_KEY)) || [];
+    return raw.map(s => {
+      if (s.matrix) return s;
+      const types = s.ticketTypes || (s.ticketType ? [s.ticketType] : ['incident']);
+      const urs = s.urgencies || (s.urgency ? [s.urgency] : ['critical']);
+      const m = {};
+      const d = (s.duration && s.duration !== '—') ? s.duration : '4h';
+      types.forEach(t => urs.forEach(u => { m[t+'|'+u] = d; }));
+      return { ...s, matrix: m };
+    });
+  } catch { return []; }
 }
 function saveCustomScenarios(list) {
   localStorage.setItem(CUSTOM_SCENARIOS_KEY, JSON.stringify(list));
