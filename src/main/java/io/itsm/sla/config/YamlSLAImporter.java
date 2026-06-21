@@ -146,7 +146,9 @@ public class YamlSLAImporter {
                 var windows = windowsRaw != null
                     ? windowsRaw.stream().map(this::parseTimeWindow).toList()
                     : List.<TimeWindow>of();
-                var precision = (String) raw.getOrDefault("precision", "MINUTES");
+                var precision = raw.get("precision") != null
+                    ? (String) raw.get("precision")
+                    : detectPrecision((String) raw.get("duration"));
                 yield new DurationAction(duration, windows, precision);
             }
             case "fixed-deadline" -> {
@@ -167,6 +169,13 @@ public class YamlSLAImporter {
         var value = raw.get("value") != null ? raw.get("value").toString() : "";
         var op = AttributeCondition.Operator.valueOf(opStr);
         return new AttributeCondition(key, op, value);
+    }
+
+    private String detectPrecision(String durationStr) {
+        if (durationStr == null) return "MINUTES";
+        if (durationStr.matches("P\\d+D")) return "DAYS";
+        if (durationStr.matches("PT\\d+H")) return "HOURS";
+        return "MINUTES";
     }
 
     private TimeWindow parseTimeWindow(Map<String, Object> raw) {
