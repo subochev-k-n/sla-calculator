@@ -498,16 +498,20 @@ function parseDuration(iso) {
   }
 }
 
-// ---- Формирование ISO-длительности из формы ----
+// ---- Формирование ISO-длительности из матрицы ----
 function buildDurationISO() {
-  const val = parseInt(document.getElementById('editDurationValue').value) || 1;
-  const unit = document.getElementById('editDurationUnit').value;
-  switch (unit) {
-    case 'minutes': return 'PT' + val + 'M';
-    case 'hours':   return 'PT' + val + 'H';
-    case 'days':    return 'P' + val + 'D';
-    default: return 'PT4H';
+  for (const el of document.querySelectorAll('.matrix-cell')) {
+    const v = el.value.trim();
+    if (!v) continue;
+    const m = v.match(/^(\d+)([hmd])$/i);
+    if (m) {
+      const u = m[2].toLowerCase();
+      if (u === 'h') return 'PT' + m[1] + 'H';
+      if (u === 'm') return 'PT' + m[1] + 'M';
+      if (u === 'd') return 'P' + m[1] + 'D';
+    }
   }
+  return 'PT4H';
 }
 
 // ---- Генерация ID для нового сценария ----
@@ -534,10 +538,12 @@ document.getElementById('saveBtn').addEventListener('click', function() {
   const modeLabel = document.getElementById('editType').value === 'calendar' ? '24/7' : 'рабочее время';
   const desc = document.getElementById('editDescription').value.trim() || modeLabel;
 
+  const schedule = document.getElementById('editType').value === 'custom' ? collectDaySchedule() : undefined;
   const scenario = {
     id, name, description: desc,
-    matrix, category,
+    matrix, category, schedule,
     duration: buildDurationISO(),
+    tz: document.getElementById('editZone').value,
     _custom: true
   };
 
@@ -600,7 +606,6 @@ document.getElementById('editType').addEventListener('change', function() {
   } else if (this.value === 'custom' && document.querySelectorAll('#dayScheduleList .day-check:checked').length === 0) {
     applyDaySchedule({MONDAY:{start:'09:00',end:'18:00'},TUESDAY:{start:'09:00',end:'18:00'},WEDNESDAY:{start:'09:00',end:'18:00'},THURSDAY:{start:'09:00',end:'18:00'},FRIDAY:{start:'09:00',end:'17:00'}});
   }
-});
 });
 
 // ---- Форматирование длительности ----
