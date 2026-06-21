@@ -558,16 +558,12 @@ document.getElementById('saveBtn').addEventListener('click', function() {
   }
   saveCustomScenarios(customs);
 
-  // Добавляем или обновляем в выпадающем списке
-  if (!SCENARIO_MAP[id]) {
-    addScenarioToSelect(scenario, true);
-  } else {
-    SCENARIO_MAP[id] = { ...scenario, _custom: true };
-    const opt = document.querySelector('#scenario option[value="' + id + '"]');
-    if (opt) opt.textContent = '✏️ ' + (scenario.name || id);
-  }
+  // Перезагружаем выпадающий список
+  const sel = document.getElementById('scenario');
+  while (sel.options.length > 1) sel.remove(1);
+  for (const key in SCENARIO_MAP) { if (!SCENARIO_MAP[key]._custom) addScenarioToSelect(SCENARIO_MAP[key], false); }
+  loadCustomScenarios().forEach(s => addScenarioToSelect(s, true));
 
-  // Выбираем сохранённый
   document.getElementById('scenario').value = id;
   document.getElementById('scenarioDesc').textContent = desc;
 
