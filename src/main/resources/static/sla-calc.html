@@ -407,11 +407,12 @@ async function loadScenarios() {
 }
 
 function addScenarioToSelect(s, isCustom) {
+  if (!s || !s.id) return;
   SCENARIO_MAP[s.id] = { ...s, _custom: isCustom };
   const sel = document.getElementById('scenario');
   const opt = document.createElement('option');
   opt.value = s.id;
-  opt.textContent = (isCustom ? '✏️ ' : '') + s.name;
+  opt.textContent = (isCustom ? '✏️ ' : '') + (s.name || s.id);
   sel.appendChild(opt);
 }
 
@@ -436,6 +437,8 @@ function fillEditor(s) {
 
   if (mode === 'calendar') {
     applyDaySchedule({MONDAY:{start:'00:00',end:'23:59'},TUESDAY:{start:'00:00',end:'23:59'},WEDNESDAY:{start:'00:00',end:'23:59'},THURSDAY:{start:'00:00',end:'23:59'},FRIDAY:{start:'00:00',end:'23:59'},SATURDAY:{start:'00:00',end:'23:59'},SUNDAY:{start:'00:00',end:'23:59'}});
+  } else if (mode === 'custom' && s.schedule) {
+    applyDaySchedule(s.schedule);
   } else {
     applyDaySchedule({MONDAY:{start:'09:00',end:'18:00'},TUESDAY:{start:'09:00',end:'18:00'},WEDNESDAY:{start:'09:00',end:'18:00'},THURSDAY:{start:'09:00',end:'18:00'},FRIDAY:{start:'09:00',end:'17:00'}});
   }
