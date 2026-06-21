@@ -144,6 +144,27 @@
             <label for="startTime">Дата и время начала работы</label>
             <input type="datetime-local" id="startTime" name="startTime" required>
           </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="reqTicketType">Тип обращения</label>
+              <select id="reqTicketType">
+                <option value="incident">Инцидент</option>
+                <option value="service_request">Запрос на обслуживание</option>
+                <option value="change">Изменение</option>
+                <option value="maintenance">Регламентные работы</option>
+                <option value="outage">Сбой / Недоступность</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="reqUrgency">Приоритет</label>
+              <select id="reqUrgency">
+                <option value="critical">🔴 Критичный</option>
+                <option value="high">🟠 Высокий</option>
+                <option value="medium">🟡 Средний</option>
+                <option value="low">🟢 Низкий</option>
+              </select>
+            </div>
+          </div>
           <div class="form-group">
             <label for="startTimeZone">Часовой пояс времени начала</label>
             <select id="startTimeZone">
@@ -617,6 +638,8 @@ document.getElementById('slaForm').addEventListener('submit', async function(e) 
   // Для кастомных сценариев передаём полные параметры, а не только ID
   const scenarioObj = SCENARIO_MAP[scenarioId];
   const body = { scenarioId, startTime };
+  body.ticketType = document.getElementById('reqTicketType').value;
+  body.urgency = document.getElementById('reqUrgency').value;
 
   if (scenarioObj) {
     if (scenarioObj._custom) {
@@ -626,8 +649,6 @@ document.getElementById('slaForm').addEventListener('submit', async function(e) 
       body.scenarioName = scenarioObj.name || scenarioId;
       body.description = scenarioObj.description || '';
     } else {
-      body.ticketType = scenarioObj.ticketType || 'incident';
-      body.urgency = scenarioObj.urgency || '';
       body.category = scenarioObj.category || '';
       body.description = scenarioObj.description || '';
       body.scenarioName = scenarioObj.name || scenarioId;
