@@ -247,45 +247,57 @@
           </div>
         </div>
 
-        <div class="editor-section">
-          <h3>⏳ Длительность</h3>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="editDurationValue">Значение</label>
-              <input type="number" id="editDurationValue" min="1" value="4">
-            </div>
-            <div class="form-group">
-              <label for="editDurationUnit">Единица</label>
-              <select id="editDurationUnit">
-                <option value="minutes">Минут</option>
-                <option value="hours" selected>Часов</option>
-                <option value="days">Рабочих дней</option>
-              </select>
-            </div>
-          </div>
-        </div>
+        <!-- Длительность задаётся в матрице SLA выше -->
 
         <div class="editor-section">
-          <h3>📂 Классификация</h3>
-          <label style="margin-bottom:4px;display:block;font-size:0.8rem;font-weight:500;color:#374151">Типы обращений</label>
-          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">
-            <label class="tag tag-day active" data-ctype="incident">Инцидент</label>
-            <label class="tag tag-day" data-ctype="service_request">Запрос</label>
-            <label class="tag tag-day" data-ctype="change">Изменение</label>
-            <label class="tag tag-day" data-ctype="maintenance">Регламент</label>
-            <label class="tag tag-day" data-ctype="outage">Сбой</label>
+          <h3>📂 Матрица SLA: тип × приоритет → длительность</h3>
+          <p style="font-size:0.75rem;color:#6b7280;margin-bottom:8px">Укажите длительность для каждой комбинации. Пусто = не поддерживается.</p>
+          <div style="overflow-x:auto">
+          <table id="slaMatrix" style="width:100%;border-collapse:collapse;font-size:0.8rem">
+            <thead>
+              <tr>
+                <th style="text-align:left;padding:4px 6px;border-bottom:2px solid var(--border)">Тип \\ Приоритет</th>
+                <th style="padding:4px 6px;border-bottom:2px solid var(--border);text-align:center">🔴 Крит</th>
+                <th style="padding:4px 6px;border-bottom:2px solid var(--border);text-align:center">🟠 Высок</th>
+                <th style="padding:4px 6px;border-bottom:2px solid var(--border);text-align:center">🟡 Средн</th>
+                <th style="padding:4px 6px;border-bottom:2px solid var(--border);text-align:center">🟢 Низк</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding:3px 6px;font-weight:500">Инцидент</td>
+                <td style="padding:2px"><input type="text" class="matrix-cell" data-ctype="incident" data-curgency="critical" value="4h" placeholder="—" style="width:52px;text-align:center;padding:3px 2px;font-size:0.75rem"></td>
+                <td style="padding:2px"><input type="text" class="matrix-cell" data-ctype="incident" data-curgency="high" value="8h" placeholder="—" style="width:52px;text-align:center;padding:3px 2px;font-size:0.75rem"></td>
+                <td style="padding:2px"><input type="text" class="matrix-cell" data-ctype="incident" data-curgency="medium" value="24h" placeholder="—" style="width:52px;text-align:center;padding:3px 2px;font-size:0.75rem"></td>
+                <td style="padding:2px"><input type="text" class="matrix-cell" data-ctype="incident" data-curgency="low" value="5d" placeholder="—" style="width:52px;text-align:center;padding:3px 2px;font-size:0.75rem"></td>
+              </tr>
+              <tr><td style="padding:3px 6px;font-weight:500">Запрос</td>
+                <td style="padding:2px"><input type="text" class="matrix-cell" data-ctype="service_request" data-curgency="critical" value="4h" placeholder="—" style="width:52px;text-align:center;padding:3px 2px;font-size:0.75rem"></td>
+                <td style="padding:2px"><input type="text" class="matrix-cell" data-ctype="service_request" data-curgency="high" value="8h" placeholder="—" style="width:52px;text-align:center;padding:3px 2px;font-size:0.75rem"></td>
+                <td style="padding:2px"><input type="text" class="matrix-cell" data-ctype="service_request" data-curgency="medium" value="24h" placeholder="—" style="width:52px;text-align:center;padding:3px 2px;font-size:0.75rem"></td>
+                <td style="padding:2px"><input type="text" class="matrix-cell" data-ctype="service_request" data-curgency="low" value="3d" placeholder="—" style="width:52px;text-align:center;padding:3px 2px;font-size:0.75rem"></td>
+              </tr>
+              <tr><td style="padding:3px 6px;font-weight:500">Изменение</td>
+                <td style="padding:2px"><input type="text" class="matrix-cell" data-ctype="change" data-curgency="critical" value="4h" placeholder="—" style="width:52px;text-align:center;padding:3px 2px;font-size:0.75rem"></td>
+                <td style="padding:2px"><input type="text" class="matrix-cell" data-ctype="change" data-curgency="high" value="8h" placeholder="—" style="width:52px;text-align:center;padding:3px 2px;font-size:0.75rem"></td>
+                <td style="padding:2px"><input type="text" class="matrix-cell" data-ctype="change" data-curgency="medium" value="24h" placeholder="—" style="width:52px;text-align:center;padding:3px 2px;font-size:0.75rem"></td>
+                <td style="padding:2px"><input type="text" class="matrix-cell" data-ctype="change" data-curgency="low" value="5d" placeholder="—" style="width:52px;text-align:center;padding:3px 2px;font-size:0.75rem"></td>
+              </tr>
+              <tr><td style="padding:3px 6px;font-weight:500">Регламент</td>
+                <td style="padding:2px"><input type="text" class="matrix-cell" data-ctype="maintenance" data-curgency="critical" placeholder="—" style="width:52px;text-align:center;padding:3px 2px;font-size:0.75rem"></td>
+                <td style="padding:2px"><input type="text" class="matrix-cell" data-ctype="maintenance" data-curgency="high" placeholder="—" style="width:52px;text-align:center;padding:3px 2px;font-size:0.75rem"></td>
+                <td style="padding:2px"><input type="text" class="matrix-cell" data-ctype="maintenance" data-curgency="medium" placeholder="—" style="width:52px;text-align:center;padding:3px 2px;font-size:0.75rem"></td>
+                <td style="padding:2px"><input type="text" class="matrix-cell" data-ctype="maintenance" data-curgency="low" placeholder="—" style="width:52px;text-align:center;padding:3px 2px;font-size:0.75rem"></td>
+              </tr>
+              <tr><td style="padding:3px 6px;font-weight:500">Сбой</td>
+                <td style="padding:2px"><input type="text" class="matrix-cell" data-ctype="outage" data-curgency="critical" value="30m" placeholder="—" style="width:52px;text-align:center;padding:3px 2px;font-size:0.75rem"></td>
+                <td style="padding:2px"><input type="text" class="matrix-cell" data-ctype="outage" data-curgency="high" placeholder="—" style="width:52px;text-align:center;padding:3px 2px;font-size:0.75rem"></td>
+                <td style="padding:2px"><input type="text" class="matrix-cell" data-ctype="outage" data-curgency="medium" placeholder="—" style="width:52px;text-align:center;padding:3px 2px;font-size:0.75rem"></td>
+                <td style="padding:2px"><input type="text" class="matrix-cell" data-ctype="outage" data-curgency="low" placeholder="—" style="width:52px;text-align:center;padding:3px 2px;font-size:0.75rem"></td>
+              </tr>
+            </tbody>
+          </table>
           </div>
-          <label style="margin-bottom:4px;display:block;font-size:0.8rem;font-weight:500;color:#374151">Приоритеты</label>
-          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">
-            <label class="tag tag-day active" data-curgency="critical">🔴 Критичный</label>
-            <label class="tag tag-day" data-curgency="high">🟠 Высокий</label>
-            <label class="tag tag-day" data-curgency="medium">🟡 Средний</label>
-            <label class="tag tag-day" data-curgency="low">🟢 Низкий</label>
-          </div>
-          <div class="form-group">
-            <label for="editCategory">Категория</label>
-            <input type="text" id="editCategory" placeholder="Например: hardware, software, access">
-          </div>
+          <p class="hint" style="margin-top:6px">Формат: 30m, 4h, 8h, 24h, 3d, 5d, 10d. Пусто = не поддерживается.</p>
         </div>
 
         <div class="btn-group">
@@ -362,12 +374,7 @@ function fillEditor(s) {
   document.getElementById('editType').value = mode;
   toggleCustomSchedule(mode);
 
-  // Длительность
-  const dur = parseDuration(s.duration || 'PT4H');
-  document.getElementById('editDurationValue').value = dur.value;
-  document.getElementById('editDurationUnit').value = dur.unit;
-
-  // Классификация
+  // Классификация (длительность — в матрице)
   updateClassificationTags(s);
   document.getElementById('editCategory').value = s.category || '';
 
@@ -396,10 +403,18 @@ function getSelectedDays() {
 function getSelectedTypes() { return Array.from(document.querySelectorAll('[data-ctype].active')).map(el => el.dataset.ctype); }
 function getSelectedUrgencies() { return Array.from(document.querySelectorAll('[data-curgency].active')).map(el => el.dataset.curgency); }
 function updateClassificationTags(s) {
-  document.querySelectorAll('[data-ctype]').forEach(el => { el.classList.remove('active'); el.classList.add('inactive'); });
-  (s.ticketTypes || (s.ticketType ? [s.ticketType] : ['incident'])).forEach(t => { const el = document.querySelector('[data-ctype="'+t+'"]'); if(el){el.classList.remove('inactive');el.classList.add('active');} });
-  document.querySelectorAll('[data-curgency]').forEach(el => { el.classList.remove('active'); el.classList.add('inactive'); });
-  (s.urgencies || (s.urgency ? [s.urgency] : ['critical'])).forEach(u => { const el = document.querySelector('[data-curgency="'+u+'"]'); if(el){el.classList.remove('inactive');el.classList.add('active');} });
+  const matrix = s.matrix || {};
+  document.querySelectorAll('.matrix-cell').forEach(el => {
+    el.value = matrix[el.dataset.ctype + '|' + el.dataset.curgency] || '';
+  });
+}
+function collectMatrix() {
+  const m = {};
+  document.querySelectorAll('.matrix-cell').forEach(el => {
+    const v = el.value.trim();
+    if (v) m[el.dataset.ctype + '|' + el.dataset.curgency] = v;
+  });
+  return m;
 }
 
 // ---- Парсинг длительности ISO в число + единица ----
@@ -445,22 +460,17 @@ document.getElementById('saveBtn').addEventListener('click', function() {
 
   const isCalendar = document.getElementById('editType').value === 'calendar';
   const id = generateId(name);
-  const ticketTypes = getSelectedTypes();
-  const urgencies = getSelectedUrgencies();
+  const matrix = collectMatrix();
   const category = document.getElementById('editCategory').value.trim();
 
   // Формируем описание
-  const unitLabels = { minutes:'мин', hours:'ч', days:'р.д.' };
-  const durVal = document.getElementById('editDurationValue').value;
-  const durUnit = document.getElementById('editDurationUnit').value;
-  const durLabel = durVal + ' ' + unitLabels[durUnit] || '';
-  const modeLabel = isCalendar ? '24/7' : 'рабочее время';
-  const desc = document.getElementById('editDescription').value.trim() || (durLabel + ', ' + modeLabel);
+  const modeLabel = document.getElementById('editType').value === 'calendar' ? '24/7' : 'рабочее время';
+  const desc = document.getElementById('editDescription').value.trim() || modeLabel;
 
   const scenario = {
     id, name, description: desc,
-    ticketTypes, urgencies,
-    category, duration: buildDurationISO(),
+    matrix, category,
+    duration: buildDurationISO(),
     _custom: true
   };
 
