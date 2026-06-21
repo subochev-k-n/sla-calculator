@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SLA Calculator — расчёт крайнего срока</title>
+<title>SLA Calculator</title>
 <style>
   :root {
     --bg: #f4f6f9;
@@ -11,12 +11,8 @@
     --border: #d1d5db;
     --primary: #2563eb;
     --primary-hover: #1d4ed8;
-    --text: #1f2937;
-    --text-muted: #6b7280;
     --success: #16a34a;
     --danger: #dc2626;
-    --warn-bg: #fef3c7;
-    --warn-border: #f59e0b;
     --radius: 10px;
     --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
   }
@@ -24,152 +20,101 @@
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     background: var(--bg);
-    color: var(--text);
+    color: #1f2937;
     line-height: 1.5;
     padding: 24px;
     min-height: 100vh;
   }
-  .container { max-width: 720px; margin: 0 auto; }
+  .container { max-width: 1100px; margin: 0 auto; }
   h1 {
     font-size: 1.75rem;
     font-weight: 700;
     margin-bottom: 4px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    display: flex; align-items: center; gap: 8px;
   }
-  .subtitle {
-    color: var(--text-muted);
-    margin-bottom: 24px;
-    font-size: 0.9rem;
-  }
+  .subtitle { color: #6b7280; margin-bottom: 24px; font-size: 0.9rem; }
+  .columns { display: flex; gap: 20px; align-items: flex-start; }
+  .col-left { flex: 1; min-width: 0; }
+  .col-right { width: 400px; flex-shrink: 0; }
+
   .card {
-    background: var(--card);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    padding: 24px;
-    margin-bottom: 20px;
+    background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; margin-bottom: 20px;
   }
-  .card h2 {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 16px;
-  }
-  .form-group { margin-bottom: 16px; }
-  .form-group:last-child { margin-bottom: 0; }
+  .card h2 { font-size: 1rem; font-weight: 600; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+
+  .form-group { margin-bottom: 12px; }
+  .form-row { display: flex; gap: 10px; }
+  .form-row .form-group { flex: 1; }
   label {
-    display: block;
-    font-size: 0.875rem;
-    font-weight: 500;
-    margin-bottom: 6px;
-    color: var(--text);
+    display: block; font-size: 0.8rem; font-weight: 500; margin-bottom: 4px; color: #374151;
   }
-  select, input[type="datetime-local"], button {
-    width: 100%;
-    padding: 10px 14px;
-    font-size: 0.95rem;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--card);
-    color: var(--text);
-    transition: border-color 0.15s, box-shadow 0.15s;
-    font-family: inherit;
+  select, input, textarea {
+    width: 100%; padding: 8px 10px; font-size: 0.9rem;
+    border: 1px solid var(--border); border-radius: 6px; background: var(--card); color: #1f2937;
+    transition: border-color 0.15s, box-shadow 0.15s; font-family: inherit;
   }
-  select:focus, input:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+  textarea { resize: vertical; min-height: 40px; }
+  select:focus, input:focus, textarea:focus {
+    outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
   }
-  .scenario-desc {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    margin-top: 4px;
-    padding: 6px 10px;
-    background: #f9fafb;
-    border-radius: 6px;
-  }
+  .scenario-desc { font-size: 0.8rem; color: #6b7280; margin-top: 4px; padding: 6px 10px; background: #f9fafb; border-radius: 6px; }
+
   button {
-    background: var(--primary);
-    color: white;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
+    padding: 8px 16px; font-size: 0.9rem; font-weight: 600;
+    border: none; border-radius: 6px; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    transition: opacity 0.15s;
   }
-  button:hover { background: var(--primary-hover); }
-  button:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+  .btn-success { background: var(--success); color: white; }
+  .btn-success:hover:not(:disabled) { background: #15803d; }
+  .btn-outline { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
+  .btn-outline:hover:not(:disabled) { background: #eff6ff; }
+  .btn-danger { background: var(--danger); color: white; }
+  .btn-danger:hover:not(:disabled) { background: #b91c1c; }
+  .btn-sm { padding: 5px 10px; font-size: 0.8rem; }
+  .btn-group { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+
   .spinner {
-    display: inline-block;
-    width: 18px; height: 18px;
-    border: 2px solid rgba(255,255,255,0.3);
-    border-top-color: white;
-    border-radius: 50%;
+    display: inline-block; width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%;
     animation: spin 0.6s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  .result-card {
-    display: none;
-    border-left: 4px solid var(--primary);
-  }
+  .result-card { display: none; border-left: 4px solid var(--primary); }
   .result-card.visible { display: block; }
   .result-card.success { border-left-color: var(--success); }
   .result-card.error { border-left-color: var(--danger); }
-
-  .result-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
-  .result-item {
-    padding: 12px;
-    background: #f9fafb;
-    border-radius: 8px;
-  }
+  .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .result-item { padding: 10px; background: #f9fafb; border-radius: 6px; }
   .result-item.full { grid-column: 1 / -1; }
-  .result-item .label {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    color: var(--text-muted);
-    margin-bottom: 2px;
-  }
-  .result-item .value {
-    font-size: 1.05rem;
-    font-weight: 600;
-  }
-  .result-item .value.big {
-    font-size: 1.35rem;
-    color: var(--primary);
-  }
+  .result-item .label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.03em; color: #6b7280; margin-bottom: 2px; }
+  .result-item .value { font-size: 1rem; font-weight: 600; }
+  .result-item .value.big { font-size: 1.25rem; color: var(--primary); }
   .result-item .value.overdue { color: var(--danger); }
   .result-item .value.on-time { color: var(--success); }
 
-  .error-message {
-    color: var(--danger);
-    font-weight: 500;
-  }
-
-  .badge {
-    display: inline-block;
-    padding: 2px 10px;
-    border-radius: 999px;
-    font-size: 0.75rem;
-    font-weight: 600;
-  }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
   .badge-success { background: #dcfce7; color: #166534; }
   .badge-danger { background: #fee2e2; color: #991b1b; }
 
-  @media (max-width: 640px) {
-    body { padding: 12px; }
-    .card { padding: 16px; }
-    .result-grid { grid-template-columns: 1fr; }
+  .editor-section { border: 1px solid var(--border); border-radius: 6px; padding: 12px; margin-bottom: 10px; }
+  .editor-section h3 { font-size: 0.85rem; font-weight: 600; margin-bottom: 8px; color: #374151; }
+  .editor-section .hint { font-size: 0.75rem; color: #9ca3af; margin-top: 2px; }
+  .checkbox-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+  .checkbox-row input[type="checkbox"] { width: auto; }
+
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 500; margin: 2px; }
+  .tag-day { background: #dbeafe; color: #1e40af; }
+  .tag-day.active { background: var(--primary); color: white; cursor: pointer; }
+  .tag-day.inactive { background: #e5e7eb; color: #9ca3af; cursor: pointer; }
+
+  @media (max-width: 860px) {
+    .columns { flex-direction: column; }
+    .col-right { width: 100%; }
   }
 </style>
 </head>
@@ -178,55 +123,389 @@
   <h1>⏱️ SLA Calculator</h1>
   <p class="subtitle">Расчёт крайнего срока выполнения работы с учётом SLA, выходных и праздников</p>
 
-  <div class="card">
-    <h2>📋 Параметры запроса</h2>
-    <form id="slaForm" autocomplete="off">
-      <div class="form-group">
-        <label for="scenario">Тип работы / SLA</label>
-        <select id="scenario" name="scenarioId" required>
-          <option value="" disabled selected>— Выберите сценарий —</option>
-        </select>
-        <div id="scenarioDesc" class="scenario-desc">&nbsp;</div>
+  <div class="columns">
+    <!-- Левая колонка: форма запроса и результат -->
+    <div class="col-left">
+      <div class="card">
+        <h2>📋 Запрос</h2>
+        <form id="slaForm" autocomplete="off">
+          <div class="form-group">
+            <label for="scenario">Тип работы / SLA</label>
+            <select id="scenario" name="scenarioId" required>
+              <option value="" disabled selected>— Выберите сценарий —</option>
+            </select>
+            <div id="scenarioDesc" class="scenario-desc">&nbsp;</div>
+          </div>
+          <div class="form-group">
+            <label for="startTime">Дата и время начала работы</label>
+            <input type="datetime-local" id="startTime" name="startTime" required>
+          </div>
+          <div class="form-group">
+            <button type="submit" class="btn-primary" id="calcBtn" style="width:100%">
+              <span id="btnText">Рассчитать крайний срок</span>
+              <span id="btnSpinner" class="spinner" style="display:none"></span>
+            </button>
+          </div>
+        </form>
       </div>
-      <div class="form-group">
-        <label for="startTime">Дата и время начала работы</label>
-        <input type="datetime-local" id="startTime" name="startTime" required>
-      </div>
-      <div class="form-group">
-        <button type="submit" id="calcBtn">
-          <span id="btnText">Рассчитать крайний срок</span>
-          <span id="btnSpinner" class="spinner" style="display:none"></span>
-        </button>
-      </div>
-    </form>
-  </div>
 
-  <div id="resultCard" class="card result-card">
-    <h2>📊 Результат расчёта</h2>
-    <div id="resultContent"></div>
+      <div id="resultCard" class="card result-card">
+        <h2>📊 Результат</h2>
+        <div id="resultContent"></div>
+      </div>
+    </div>
+
+    <!-- Правая колонка: редактор SLA -->
+    <div class="col-right">
+      <div class="card">
+        <h2>⚙️ Параметры SLA</h2>
+        <p style="font-size:0.8rem;color:#6b7280;margin-bottom:12px">
+          Выберите сценарий слева — поля заполнятся автоматически. Измените и сохраните как новый.
+        </p>
+
+        <div class="form-group">
+          <label for="editName">Название</label>
+          <input type="text" id="editName" placeholder="Например: VIP-поддержка 1ч">
+        </div>
+
+        <div class="form-group">
+          <label for="editDescription">Описание</label>
+          <input type="text" id="editDescription" placeholder="Краткое описание SLA">
+        </div>
+
+        <div class="editor-section">
+          <h3>🕐 Тип времени</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="editType">Режим</label>
+              <select id="editType">
+                <option value="working">Рабочее время (8x5)</option>
+                <option value="calendar">Круглосуточно (24/7)</option>
+                <option value="custom">Произвольное расписание</option>
+              </select>
+            </div>
+          </div>
+          <div id="customSchedule" style="display:none">
+            <label style="margin-top:6px">Рабочие дни</label>
+            <div id="dayTags" style="display:flex;gap:4px;margin-bottom:6px;flex-wrap:wrap">
+              <span class="tag tag-day" data-day="MONDAY">Пн</span>
+              <span class="tag tag-day" data-day="TUESDAY">Вт</span>
+              <span class="tag tag-day" data-day="WEDNESDAY">Ср</span>
+              <span class="tag tag-day" data-day="THURSDAY">Чт</span>
+              <span class="tag tag-day" data-day="FRIDAY">Пт</span>
+              <span class="tag tag-day" data-day="SATURDAY">Сб</span>
+              <span class="tag tag-day" data-day="SUNDAY">Вс</span>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="editDayStart">Начало дня</label>
+                <input type="time" id="editDayStart" value="09:00">
+              </div>
+              <div class="form-group">
+                <label for="editDayEnd">Конец дня</label>
+                <input type="time" id="editDayEnd" value="18:00">
+              </div>
+            </div>
+            <div class="checkbox-row">
+              <input type="checkbox" id="editIncludeHolidays">
+              <label for="editIncludeHolidays" style="margin:0;font-size:0.8rem">Учитывать праздники как нерабочие дни</label>
+            </div>
+          </div>
+          <div class="form-group" style="margin-top:8px">
+            <label for="editZone">Часовой пояс</label>
+            <select id="editZone">
+              <option value="Europe/Moscow">Москва (MSK, UTC+3)</option>
+              <option value="Europe/Kaliningrad">Калининград (UTC+2)</option>
+              <option value="Europe/Samara">Самара (UTC+4)</option>
+              <option value="Asia/Yekaterinburg">Екатеринбург (UTC+5)</option>
+              <option value="Asia/Omsk">Омск (UTC+6)</option>
+              <option value="Asia/Krasnoyarsk">Красноярск (UTC+7)</option>
+              <option value="Asia/Irkutsk">Иркутск (UTC+8)</option>
+              <option value="Asia/Vladivostok">Владивосток (UTC+10)</option>
+              <option value="Asia/Kamchatka">Камчатка (UTC+12)</option>
+              <option value="UTC">UTC</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="editor-section">
+          <h3>⏳ Длительность</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="editDurationValue">Значение</label>
+              <input type="number" id="editDurationValue" min="1" value="4">
+            </div>
+            <div class="form-group">
+              <label for="editDurationUnit">Единица</label>
+              <select id="editDurationUnit">
+                <option value="minutes">Минут</option>
+                <option value="hours" selected>Часов</option>
+                <option value="days">Рабочих дней</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="editor-section">
+          <h3>📂 Классификация</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="editTicketType">Тип обращения</label>
+              <select id="editTicketType">
+                <option value="incident">Инцидент</option>
+                <option value="service_request">Запрос на обслуживание</option>
+                <option value="change">Изменение</option>
+                <option value="maintenance">Регламентные работы</option>
+                <option value="outage">Сбой / Недоступность</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="editUrgency">Приоритет</label>
+              <select id="editUrgency">
+                <option value="critical">🔴 Критичный</option>
+                <option value="high">🟠 Высокий</option>
+                <option value="medium">🟡 Средний</option>
+                <option value="low">🟢 Низкий</option>
+                <option value="">— Не задан —</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="editCategory">Категория</label>
+            <input type="text" id="editCategory" placeholder="Например: hardware, software, access">
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn-success" id="saveBtn" style="flex:1">
+            💾 Сохранить как новый сценарий
+          </button>
+          <button class="btn-outline btn-sm" id="resetEditBtn">
+            ↩️ Сбросить
+          </button>
+        </div>
+        <div id="saveMessage" style="font-size:0.8rem;margin-top:8px;color:var(--success);display:none"></div>
+      </div>
+    </div>
   </div>
 </div>
 
 <script>
+// ---- Хранение сценариев ----
 const SCENARIO_MAP = {};
+const CUSTOM_SCENARIOS_KEY = 'sla_custom_scenarios';
+let currentEditId = null;
 
+// ---- Инициализация дней недели ----
+const DAY_NAMES = { MONDAY:'Пн', TUESDAY:'Вт', WEDNESDAY:'Ср', THURSDAY:'Чт', FRIDAY:'Пт', SATURDAY:'Сб', SUNDAY:'Вс' };
+const ALL_DAYS = Object.keys(DAY_NAMES);
+
+// ---- Загрузка/сохранение кастомных сценариев в localStorage ----
+function loadCustomScenarios() {
+  try { return JSON.parse(localStorage.getItem(CUSTOM_SCENARIOS_KEY)) || []; }
+  catch { return []; }
+}
+function saveCustomScenarios(list) {
+  localStorage.setItem(CUSTOM_SCENARIOS_KEY, JSON.stringify(list));
+}
+
+// ---- Загрузка сценариев с сервера ----
 async function loadScenarios() {
+  const sel = document.getElementById('scenario');
+  // Очищаем, оставляя заглушку
+  while (sel.options.length > 1) sel.remove(1);
+  for (const key in SCENARIO_MAP) delete SCENARIO_MAP[key];
+
   try {
     const res = await fetch('/api/v1/sla/scenarios');
     const scenarios = await res.json();
-    const sel = document.getElementById('scenario');
-    scenarios.forEach(s => {
-      SCENARIO_MAP[s.id] = s;
-      const opt = document.createElement('option');
-      opt.value = s.id;
-      opt.textContent = s.name;
-      sel.appendChild(opt);
-    });
-  } catch (e) {
-    console.error('Failed to load scenarios', e);
+    scenarios.forEach(s => addScenarioToSelect(s, false));
+  } catch (e) { console.error('Failed to load scenarios', e); }
+
+  // Кастомные из localStorage
+  loadCustomScenarios().forEach(s => addScenarioToSelect(s, true));
+}
+
+function addScenarioToSelect(s, isCustom) {
+  SCENARIO_MAP[s.id] = { ...s, _custom: isCustom };
+  const sel = document.getElementById('scenario');
+  const opt = document.createElement('option');
+  opt.value = s.id;
+  opt.textContent = (isCustom ? '✏️ ' : '') + s.name;
+  sel.appendChild(opt);
+}
+
+// ---- Редактор: заполнение при выборе сценария ----
+function fillEditor(s) {
+  if (!s) return;
+  currentEditId = s.id;
+  document.getElementById('editName').value = s.name || '';
+  document.getElementById('editDescription').value = s.description || '';
+
+  // Тип времени
+  const is247 = s.duration === 'PT4H' && s.ticketType === 'incident' && s.urgency === 'critical'
+    || s.ticketType === 'outage';
+  // Эвристика: если сценарий из сервера — пробуем угадать тип
+  const mode = is247 ? 'calendar' : 'working';
+  document.getElementById('editType').value = mode;
+  toggleCustomSchedule(mode);
+
+  // Длительность
+  const dur = parseDuration(s.duration || 'PT4H');
+  document.getElementById('editDurationValue').value = dur.value;
+  document.getElementById('editDurationUnit').value = dur.unit;
+
+  // Классификация
+  document.getElementById('editTicketType').value = s.ticketType || 'incident';
+  document.getElementById('editUrgency').value = s.urgency || '';
+  document.getElementById('editCategory').value = s.category || '';
+
+  // Дни недели (по умолчанию Пн-Пт для working, все дни для calendar)
+  updateDayTags(mode === 'calendar' ? ALL_DAYS : ['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY']);
+  document.getElementById('editIncludeHolidays').checked = mode !== 'calendar';
+}
+
+function toggleCustomSchedule(mode) {
+  const el = document.getElementById('customSchedule');
+  el.style.display = mode === 'custom' ? 'block' : 'none';
+}
+
+function updateDayTags(activeDays) {
+  document.querySelectorAll('#dayTags .tag-day').forEach(el => {
+    const isActive = activeDays.includes(el.dataset.day);
+    el.className = 'tag tag-day ' + (isActive ? 'active' : 'inactive');
+  });
+}
+
+function getSelectedDays() {
+  return Array.from(document.querySelectorAll('#dayTags .tag-day.active'))
+    .map(el => el.dataset.day);
+}
+
+// ---- Парсинг длительности ISO в число + единица ----
+function parseDuration(iso) {
+  if (!iso || iso === '—') return { value: 4, unit: 'hours' };
+  const m = iso.match(/^PT?(\d+)([HMD])/);
+  if (!m) return { value: 4, unit: 'hours' };
+  const val = parseInt(m[1]);
+  switch (m[2]) {
+    case 'M': return { value: val, unit: 'minutes' };
+    case 'H': return { value: val, unit: 'hours' };
+    case 'D': return { value: val, unit: 'days' };
+    default: return { value: 4, unit: 'hours' };
   }
 }
 
+// ---- Формирование ISO-длительности из формы ----
+function buildDurationISO() {
+  const val = parseInt(document.getElementById('editDurationValue').value) || 1;
+  const unit = document.getElementById('editDurationUnit').value;
+  switch (unit) {
+    case 'minutes': return 'PT' + val + 'M';
+    case 'hours':   return 'PT' + val + 'H';
+    case 'days':    return 'P' + val + 'D';
+    default: return 'PT4H';
+  }
+}
+
+// ---- Генерация ID для нового сценария ----
+function generateId(name) {
+  const base = name.toLowerCase()
+    .replace(/[^a-zа-яё0-9]+/g, '-').replace(/^-|-$/g, '') || 'custom-sla';
+  let id = base;
+  let n = 1;
+  while (SCENARIO_MAP[id]) { id = base + '-' + (n++); }
+  return id;
+}
+
+// ---- Кнопка "Сохранить как новый сценарий" ----
+document.getElementById('saveBtn').addEventListener('click', function() {
+  const name = document.getElementById('editName').value.trim();
+  if (!name) { alert('Введите название сценария'); return; }
+
+  const isCalendar = document.getElementById('editType').value === 'calendar';
+  const isCustom = document.getElementById('editType').value === 'custom';
+
+  const id = generateId(name);
+  const ticketType = document.getElementById('editTicketType').value;
+  const urgency = document.getElementById('editUrgency').value;
+  const category = document.getElementById('editCategory').value.trim();
+
+  // Формируем описание
+  const unitLabels = { minutes:'мин', hours:'ч', days:'р.д.' };
+  const durVal = document.getElementById('editDurationValue').value;
+  const durUnit = document.getElementById('editDurationUnit').value;
+  const durLabel = durVal + ' ' + unitLabels[durUnit] || '';
+  const modeLabel = isCalendar ? '24/7' : 'рабочее время';
+  const desc = document.getElementById('editDescription').value.trim() || (durLabel + ', ' + modeLabel);
+
+  const scenario = {
+    id, name, description: desc,
+    ticketType, urgency, category,
+    duration: buildDurationISO(),
+    _custom: true
+  };
+
+  // Сохраняем в localStorage
+  const customs = loadCustomScenarios();
+  // Проверяем, не обновляем ли существующий
+  const existingIdx = customs.findIndex(s => s.id === currentEditId && SCENARIO_MAP[currentEditId]?._custom);
+  if (existingIdx >= 0 && currentEditId) {
+    customs[existingIdx] = scenario;
+  } else {
+    customs.push(scenario);
+  }
+  saveCustomScenarios(customs);
+
+  // Добавляем в выпадающий список
+  if (!SCENARIO_MAP[id]) {
+    addScenarioToSelect(scenario, true);
+  }
+
+  // Выбираем сохранённый
+  document.getElementById('scenario').value = id;
+  document.getElementById('scenarioDesc').textContent = desc;
+
+  const msg = document.getElementById('saveMessage');
+  msg.textContent = '✅ Сценарий «' + name + '» сохранён';
+  msg.style.display = 'block';
+  setTimeout(() => msg.style.display = 'none', 3000);
+});
+
+// ---- Сброс редактора ----
+document.getElementById('resetEditBtn').addEventListener('click', function() {
+  const sel = document.getElementById('scenario');
+  if (sel.value && SCENARIO_MAP[sel.value]) {
+    fillEditor(SCENARIO_MAP[sel.value]);
+  }
+});
+
+// ---- Выбор сценария → заполнение редактора + описание ----
+document.getElementById('scenario').addEventListener('change', function() {
+  const s = SCENARIO_MAP[this.value];
+  document.getElementById('scenarioDesc').textContent = s ? s.description : '—';
+  if (s) fillEditor(s);
+});
+
+// ---- Клик по дню недели ----
+document.addEventListener('click', function(e) {
+  const dayEl = e.target.closest('.tag-day');
+  if (!dayEl) return;
+  dayEl.classList.toggle('active');
+  dayEl.classList.toggle('inactive');
+});
+
+// ---- Переключение режима времени ----
+document.getElementById('editType').addEventListener('change', function() {
+  toggleCustomSchedule(this.value);
+  if (this.value === 'calendar') {
+    updateDayTags(ALL_DAYS);
+  } else if (this.value === 'working') {
+    updateDayTags(['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY']);
+  }
+});
+
+// ---- Форматирование длительности ----
 function formatDuration(minutes) {
   if (minutes <= 0) return '—';
   if (minutes < 60) return minutes + ' мин';
@@ -234,21 +513,16 @@ function formatDuration(minutes) {
   const d = Math.floor(h / 8);
   const rh = h % 8;
   const rm = minutes % 60;
-  let parts = [];
+  const parts = [];
   if (d > 0) parts.push(d + ' д');
   if (rh > 0) parts.push(rh + ' ч');
   if (rm > 0) parts.push(rm + ' мин');
   return parts.join(' ');
 }
 
-document.getElementById('scenario').addEventListener('change', function() {
-  const s = SCENARIO_MAP[this.value];
-  document.getElementById('scenarioDesc').textContent = s ? s.description : '—';
-});
-
+// ---- Отправка формы расчёта ----
 document.getElementById('slaForm').addEventListener('submit', async function(e) {
   e.preventDefault();
-
   const scenarioId = document.getElementById('scenario').value;
   const startTimeRaw = document.getElementById('startTime').value;
   const btn = document.getElementById('calcBtn');
@@ -258,7 +532,6 @@ document.getElementById('slaForm').addEventListener('submit', async function(e) 
   if (!scenarioId) { alert('Выберите тип работы'); return; }
   if (!startTimeRaw) { alert('Укажите дату и время начала'); return; }
 
-  // Преобразуем datetime-local в ISO с таймзоной
   const localDate = new Date(startTimeRaw);
   const offset = -localDate.getTimezoneOffset();
   const sign = offset >= 0 ? '+' : '-';
@@ -270,7 +543,6 @@ document.getElementById('slaForm').addEventListener('submit', async function(e) 
     pad2(localDate.getHours()) + ':' +
     pad2(localDate.getMinutes()) + ':00' + zone;
 
-  // Показываем spinner
   btn.disabled = true;
   btnText.textContent = 'Расчёт...';
   spinner.style.display = 'inline-block';
@@ -315,7 +587,7 @@ document.getElementById('slaForm').addEventListener('submit', async function(e) 
                 : '<span class="badge badge-success">✅ В срок</span>'}
             </div>
           </div>
-          <div class="result-item full" style="font-size:0.85rem;color:var(--text-muted)">
+          <div class="result-item full" style="font-size:0.85rem;color:#6b7280">
             ${data.description || ''}
           </div>
         </div>`;
@@ -335,10 +607,13 @@ document.getElementById('slaForm').addEventListener('submit', async function(e) 
   }
 });
 
-// Устанавливаем текущее время
+// ---- Инициализация ----
 const now = new Date();
 now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
 document.getElementById('startTime').value = now.toISOString().slice(0, 16);
+
+// Дни недели: начальное состояние
+updateDayTags(['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY']);
 
 loadScenarios();
 </script>
