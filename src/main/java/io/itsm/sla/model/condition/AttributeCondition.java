@@ -17,7 +17,7 @@ public record AttributeCondition(String key, Operator operator, String value) im
     public boolean evaluate(SLAContext context) {
         var actual = context.getAttribute(key);
         if (actual == null) {
-            return operator == Operator.EXISTS && value.isEmpty(); // EXISTS value="" и атрибут отсутствует → false
+            return false; // атрибут отсутствует — ни одно условие не выполнено
         }
 
         return switch (operator) {
