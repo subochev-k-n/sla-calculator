@@ -28,6 +28,12 @@ spring:
       mode: always
       schema-locations: classpath:schema.sql
 
+  # Отключаем кэш статики (для разработки)
+  web:
+    resources:
+      cache:
+        period: 0
+
   # Cache
   cache:
     type: caffeine

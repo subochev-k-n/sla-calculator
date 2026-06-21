@@ -5,6 +5,7 @@ import io.itsm.sla.model.SLADeadline;
 import io.itsm.sla.service.DeadlineCalculator;
 import io.itsm.sla.web.dto.SLAScenarioDTO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +22,7 @@ import java.util.stream.Stream;
  */
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 public class SLAWebController {
 
     private final DeadlineCalculator calculator;
@@ -63,6 +65,8 @@ public class SLAWebController {
             @RequestBody Map<String, String> request) {
 
         var scenarioId = request.get("scenarioId");
+        log.debug("calculateScenario request: {} {}", scenarioId, request);
+
         SLAScenarioDTO scenario = null;
 
         if (scenarioId != null && SCENARIOS.containsKey(scenarioId)) {

@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SLA Calculator</title>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="version" content="2.3">
+<title>SLA Calculator v2.2</title>
 <style>
   :root {
     --bg: #f4f6f9;
@@ -554,13 +558,17 @@ document.getElementById('slaForm').addEventListener('submit', async function(e) 
   const scenarioObj = SCENARIO_MAP[scenarioId];
   const body = { scenarioId, startTime };
 
-  if (scenarioObj && scenarioObj._custom) {
+  // Всегда передаём полные параметры из редактора (сервер использует их,
+  // если сценарий не предустановленный)
+  if (scenarioObj) {
     body.ticketType = scenarioObj.ticketType || 'incident';
     body.urgency = scenarioObj.urgency || '';
     body.category = scenarioObj.category || '';
     body.description = scenarioObj.description || '';
     body.scenarioName = scenarioObj.name || scenarioId;
   }
+
+  console.log('[SLA] Sending body:', JSON.stringify(body));
 
   try {
     const res = await fetch('/api/v1/sla/scenario/calculate', {
