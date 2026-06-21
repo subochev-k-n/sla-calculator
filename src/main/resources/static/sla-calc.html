@@ -226,28 +226,54 @@
             </div>
           </div>
           <div id="customSchedule" style="display:none">
-            <label style="margin-top:6px">Рабочие дни</label>
-            <div id="dayTags" style="display:flex;gap:4px;margin-bottom:6px;flex-wrap:wrap">
-              <span class="tag tag-day" data-day="MONDAY">Пн</span>
-              <span class="tag tag-day" data-day="TUESDAY">Вт</span>
-              <span class="tag tag-day" data-day="WEDNESDAY">Ср</span>
-              <span class="tag tag-day" data-day="THURSDAY">Чт</span>
-              <span class="tag tag-day" data-day="FRIDAY">Пт</span>
-              <span class="tag tag-day" data-day="SATURDAY">Сб</span>
-              <span class="tag tag-day" data-day="SUNDAY">Вс</span>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label for="editDayStart">Начало дня</label>
-                <input type="time" id="editDayStart" value="09:00">
+            <label style="margin-top:6px;margin-bottom:4px;display:block;font-size:0.85rem;font-weight:500">Расписание по дням недели</label>
+            <p style="font-size:0.75rem;color:#6b7280;margin-bottom:6px">Галочка = день рабочий. У каждого дня своё время.</p>
+            <div id="dayScheduleList" style="display:flex;flex-direction:column;gap:4px;margin-bottom:8px">
+              <div class="day-schedule-row" data-day="MONDAY" style="display:flex;align-items:center;gap:6px;padding:4px 6px;background:#f9fafb;border-radius:6px">
+                <input type="checkbox" class="day-check" checked style="width:auto"><span style="width:30px;font-weight:600;font-size:0.85rem">Пн</span>
+                <input type="time" class="day-start" value="09:00" style="width:80px;padding:3px 4px;font-size:0.8rem;border:1px solid var(--border);border-radius:4px">
+                <span style="font-size:0.8rem;color:#6b7280">—</span>
+                <input type="time" class="day-end" value="18:00" style="width:80px;padding:3px 4px;font-size:0.8rem;border:1px solid var(--border);border-radius:4px">
               </div>
-              <div class="form-group">
-                <label for="editDayEnd">Конец дня</label>
-                <input type="time" id="editDayEnd" value="18:00">
+              <div class="day-schedule-row" data-day="TUESDAY" style="display:flex;align-items:center;gap:6px;padding:4px 6px;background:#f9fafb;border-radius:6px">
+                <input type="checkbox" class="day-check" checked style="width:auto"><span style="width:30px;font-weight:600;font-size:0.85rem">Вт</span>
+                <input type="time" class="day-start" value="09:00" style="width:80px;padding:3px 4px;font-size:0.8rem;border:1px solid var(--border);border-radius:4px">
+                <span style="font-size:0.8rem;color:#6b7280">—</span>
+                <input type="time" class="day-end" value="18:00" style="width:80px;padding:3px 4px;font-size:0.8rem;border:1px solid var(--border);border-radius:4px">
+              </div>
+              <div class="day-schedule-row" data-day="WEDNESDAY" style="display:flex;align-items:center;gap:6px;padding:4px 6px;background:#f9fafb;border-radius:6px">
+                <input type="checkbox" class="day-check" checked style="width:auto"><span style="width:30px;font-weight:600;font-size:0.85rem">Ср</span>
+                <input type="time" class="day-start" value="09:00" style="width:80px;padding:3px 4px;font-size:0.8rem;border:1px solid var(--border);border-radius:4px">
+                <span style="font-size:0.8rem;color:#6b7280">—</span>
+                <input type="time" class="day-end" value="18:00" style="width:80px;padding:3px 4px;font-size:0.8rem;border:1px solid var(--border);border-radius:4px">
+              </div>
+              <div class="day-schedule-row" data-day="THURSDAY" style="display:flex;align-items:center;gap:6px;padding:4px 6px;background:#f9fafb;border-radius:6px">
+                <input type="checkbox" class="day-check" checked style="width:auto"><span style="width:30px;font-weight:600;font-size:0.85rem">Чт</span>
+                <input type="time" class="day-start" value="09:00" style="width:80px;padding:3px 4px;font-size:0.8rem;border:1px solid var(--border);border-radius:4px">
+                <span style="font-size:0.8rem;color:#6b7280">—</span>
+                <input type="time" class="day-end" value="18:00" style="width:80px;padding:3px 4px;font-size:0.8rem;border:1px solid var(--border);border-radius:4px">
+              </div>
+              <div class="day-schedule-row" data-day="FRIDAY" style="display:flex;align-items:center;gap:6px;padding:4px 6px;background:#f9fafb;border-radius:6px">
+                <input type="checkbox" class="day-check" checked style="width:auto"><span style="width:30px;font-weight:600;font-size:0.85rem">Пт</span>
+                <input type="time" class="day-start" value="09:00" style="width:80px;padding:3px 4px;font-size:0.8rem;border:1px solid var(--border);border-radius:4px">
+                <span style="font-size:0.8rem;color:#6b7280">—</span>
+                <input type="time" class="day-end" value="17:00" style="width:80px;padding:3px 4px;font-size:0.8rem;border:1px solid var(--border);border-radius:4px">
+              </div>
+              <div class="day-schedule-row" data-day="SATURDAY" style="display:flex;align-items:center;gap:6px;padding:4px 6px;background:#f9fafb;border-radius:6px">
+                <input type="checkbox" class="day-check" style="width:auto"><span style="width:30px;font-weight:600;font-size:0.85rem;color:#9ca3af">Сб</span>
+                <input type="time" class="day-start" value="10:00" style="width:80px;padding:3px 4px;font-size:0.8rem;border:1px solid var(--border);border-radius:4px">
+                <span style="font-size:0.8rem;color:#6b7280">—</span>
+                <input type="time" class="day-end" value="15:00" style="width:80px;padding:3px 4px;font-size:0.8rem;border:1px solid var(--border);border-radius:4px">
+              </div>
+              <div class="day-schedule-row" data-day="SUNDAY" style="display:flex;align-items:center;gap:6px;padding:4px 6px;background:#f9fafb;border-radius:6px">
+                <input type="checkbox" class="day-check" style="width:auto"><span style="width:30px;font-weight:600;font-size:0.85rem;color:#9ca3af">Вс</span>
+                <input type="time" class="day-start" value="10:00" style="width:80px;padding:3px 4px;font-size:0.8rem;border:1px solid var(--border);border-radius:4px">
+                <span style="font-size:0.8rem;color:#6b7280">—</span>
+                <input type="time" class="day-end" value="15:00" style="width:80px;padding:3px 4px;font-size:0.8rem;border:1px solid var(--border);border-radius:4px">
               </div>
             </div>
             <div class="checkbox-row">
-              <input type="checkbox" id="editIncludeHolidays">
+              <input type="checkbox" id="editIncludeHolidays" checked>
               <label for="editIncludeHolidays" style="margin:0;font-size:0.8rem">Учитывать праздники как нерабочие дни</label>
             </div>
           </div>
@@ -342,8 +368,7 @@ const CUSTOM_SCENARIOS_KEY = 'sla_custom_scenarios';
 let currentEditId = null;
 
 // ---- Инициализация дней недели ----
-const DAY_NAMES = { MONDAY:'Пн', TUESDAY:'Вт', WEDNESDAY:'Ср', THURSDAY:'Чт', FRIDAY:'Пт', SATURDAY:'Сб', SUNDAY:'Вс' };
-const ALL_DAYS = Object.keys(DAY_NAMES);
+// ---- Инициализация ----
 
 // ---- Загрузка/сохранение кастомных сценариев в localStorage ----
 function loadCustomScenarios() {
@@ -399,8 +424,11 @@ function fillEditor(s) {
   updateClassificationTags(s);
   document.getElementById('editCategory').value = s.category || '';
 
-  // Дни недели (по умолчанию Пн-Пт для working, все дни для calendar)
-  updateDayTags(mode === 'calendar' ? ALL_DAYS : ['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY']);
+  if (mode === 'calendar') {
+    applyDaySchedule({MONDAY:{start:'00:00',end:'23:59'},TUESDAY:{start:'00:00',end:'23:59'},WEDNESDAY:{start:'00:00',end:'23:59'},THURSDAY:{start:'00:00',end:'23:59'},FRIDAY:{start:'00:00',end:'23:59'},SATURDAY:{start:'00:00',end:'23:59'},SUNDAY:{start:'00:00',end:'23:59'}});
+  } else {
+    applyDaySchedule({MONDAY:{start:'09:00',end:'18:00'},TUESDAY:{start:'09:00',end:'18:00'},WEDNESDAY:{start:'09:00',end:'18:00'},THURSDAY:{start:'09:00',end:'18:00'},FRIDAY:{start:'09:00',end:'17:00'}});
+  }
   document.getElementById('editIncludeHolidays').checked = mode !== 'calendar';
 }
 
@@ -409,14 +437,21 @@ function toggleCustomSchedule(mode) {
   el.style.display = mode === 'custom' ? 'block' : 'none';
 }
 
-function updateDayTags(activeDays) {
-  document.querySelectorAll('#dayTags .tag-day').forEach(el => {
-    const isActive = activeDays.includes(el.dataset.day);
-    el.className = 'tag tag-day ' + (isActive ? 'active' : 'inactive');
+function collectDaySchedule() {
+  const r = {};
+  document.querySelectorAll('#dayScheduleList .day-schedule-row').forEach(row => {
+    if (!row.querySelector('.day-check').checked) return;
+    r[row.dataset.day] = {start: row.querySelector('.day-start').value, end: row.querySelector('.day-end').value};
+  });
+  return r;
+}
+function applyDaySchedule(s) {
+  document.querySelectorAll('#dayScheduleList .day-schedule-row').forEach(row => {
+    const c=row.querySelector('.day-check'),st=row.querySelector('.day-start'),en=row.querySelector('.day-end');
+    if (s && s[row.dataset.day]) { c.checked=true; st.value=s[row.dataset.day].start||'09:00'; en.value=s[row.dataset.day].end||'18:00'; }
+    else { c.checked=false; st.value='09:00'; en.value='18:00'; }
   });
 }
-
-function getSelectedDays() {
   return Array.from(document.querySelectorAll('#dayTags .tag-day.active'))
     .map(el => el.dataset.day);
 }
@@ -548,9 +583,9 @@ document.addEventListener('click', function(e) {
 document.getElementById('editType').addEventListener('change', function() {
   toggleCustomSchedule(this.value);
   if (this.value === 'calendar') {
-    updateDayTags(ALL_DAYS);
+    applyDaySchedule({MONDAY:{start:'00:00',end:'23:59'},TUESDAY:{start:'00:00',end:'23:59'},WEDNESDAY:{start:'00:00',end:'23:59'},THURSDAY:{start:'00:00',end:'23:59'},FRIDAY:{start:'00:00',end:'23:59'},SATURDAY:{start:'00:00',end:'23:59'},SUNDAY:{start:'00:00',end:'23:59'}});
   } else if (this.value === 'working') {
-    updateDayTags(['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY']);
+    applyDaySchedule({MONDAY:{start:'09:00',end:'18:00'},TUESDAY:{start:'09:00',end:'18:00'},WEDNESDAY:{start:'09:00',end:'18:00'},THURSDAY:{start:'09:00',end:'18:00'},FRIDAY:{start:'09:00',end:'17:00'}});
   }
 });
 
@@ -725,8 +760,8 @@ const now = new Date();
 now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
 document.getElementById('startTime').value = now.toISOString().slice(0, 16);
 
-// Дни недели: начальное состояние
-updateDayTags(['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY']);
+// Расписание по умолчанию: Пн-Пт, Пт до 17:00
+applyDaySchedule({MONDAY:{start:'09:00',end:'18:00'},TUESDAY:{start:'09:00',end:'18:00'},WEDNESDAY:{start:'09:00',end:'18:00'},THURSDAY:{start:'09:00',end:'18:00'},FRIDAY:{start:'09:00',end:'17:00'}});
 
 loadScenarios();
 
