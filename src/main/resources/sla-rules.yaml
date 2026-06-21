@@ -1,0 +1,237 @@
+# Конфигурация SLA-правил
+# Каждое правило содержит condition (когда применяется) и action (что делать)
+
+rules:
+  - id: "incident-critical"
+    name: "Критичный инцидент"
+    description: "P1 — критичный инцидент, реакция 15 мин, решение 4 часа, 24/7"
+    priority: 1
+    condition:
+      type: and
+      conditions:
+        - field: ticketType
+          operator: eq
+          value: incident
+        - key: urgency
+          operator: eq
+          value: critical
+    action:
+      type: duration
+      duration: PT4H
+      timeWindows:
+        - name: 24x7
+          weekDays: [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY]
+          dayStart: "00:00"
+          dayEnd: "23:59:59"
+          zone: "Europe/Moscow"
+          includeHolidays: true
+    active: true
+
+  - id: "incident-high"
+    name: "Высокий инцидент"
+    description: "P2 — высокий приоритет, решение 8 часов в рабочее время"
+    priority: 2
+    condition:
+      type: and
+      conditions:
+        - field: ticketType
+          operator: eq
+          value: incident
+        - key: urgency
+          operator: gte
+          value: high
+    action:
+      type: duration
+      duration: PT8H
+      timeWindows:
+        - name: business-hours
+          weekDays: [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY]
+          dayStart: "09:00"
+          dayEnd: "18:00"
+          zone: "Europe/Moscow"
+          includeHolidays: false
+    active: true
+
+  - id: "incident-medium"
+    name: "Средний инцидент"
+    description: "P3 — обычный инцидент, 24 рабочих часа"
+    priority: 3
+    condition:
+      type: and
+      conditions:
+        - field: ticketType
+          operator: eq
+          value: incident
+        - key: urgency
+          operator: eq
+          value: medium
+    action:
+      type: duration
+      duration: PT24H
+      timeWindows:
+        - name: business-hours
+          weekDays: [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY]
+          dayStart: "09:00"
+          dayEnd: "18:00"
+          zone: "Europe/Moscow"
+          includeHolidays: false
+    active: true
+
+  - id: "incident-low"
+    name: "Низкий инцидент"
+    description: "P4 — низкий приоритет, 5 рабочих дней"
+    priority: 4
+    condition:
+      type: and
+      conditions:
+        - field: ticketType
+          operator: eq
+          value: incident
+        - key: urgency
+          operator: eq
+          value: low
+    action:
+      type: duration
+      duration: P5D
+      timeWindows:
+        - name: business-hours
+          weekDays: [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY]
+          dayStart: "09:00"
+          dayEnd: "18:00"
+          zone: "Europe/Moscow"
+          includeHolidays: false
+    active: true
+
+  - id: "service-request-software"
+    name: "Запрос на ПО"
+    description: "Запрос на установку/настройку ПО, 3 рабочих дня"
+    priority: 10
+    condition:
+      type: and
+      conditions:
+        - field: ticketType
+          operator: eq
+          value: service_request
+        - key: category
+          operator: eq
+          value: software
+    action:
+      type: duration
+      duration: P3D
+      timeWindows:
+        - name: business-hours
+          weekDays: [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY]
+          dayStart: "09:00"
+          dayEnd: "18:00"
+          zone: "Europe/Moscow"
+          includeHolidays: false
+    active: true
+
+  - id: "service-request-hardware"
+    name: "Запрос на оборудование"
+    description: "Запрос на закупку/установку оборудования, 10 рабочих дней"
+    priority: 10
+    condition:
+      type: and
+      conditions:
+        - field: ticketType
+          operator: eq
+          value: service_request
+        - key: category
+          operator: eq
+          value: hardware
+    action:
+      type: duration
+      duration: P10D
+      timeWindows:
+        - name: business-hours
+          weekDays: [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY]
+          dayStart: "09:00"
+          dayEnd: "18:00"
+          zone: "Europe/Moscow"
+          includeHolidays: false
+    active: true
+
+  - id: "maintenance-monthly"
+    name: "Ежемесячное регламентное обслуживание"
+    description: "Плановая работа, deadline = последнее ВС месяца 02:00"
+    priority: 20
+    condition:
+      type: and
+      conditions:
+        - field: ticketType
+          operator: eq
+          value: maintenance
+        - key: schedule
+          operator: eq
+          value: monthly
+    action:
+      type: fixed-deadline
+      expression: "last-sunday-of-month 02:00"
+      zone: "Europe/Moscow"
+    active: true
+
+  - id: "outage-recovery"
+    name: "Восстановление после сбоя"
+    description: "Время недоступности сервиса, 30 минут 24/7"
+    priority: 1
+    condition:
+      type: and
+      conditions:
+        - field: ticketType
+          operator: eq
+          value: outage
+    action:
+      type: duration
+      duration: PT30M
+      timeWindows:
+        - name: 24x7
+          weekDays: [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY]
+          dayStart: "00:00"
+          dayEnd: "23:59:59"
+          zone: "Europe/Moscow"
+          includeHolidays: true
+    active: true
+
+  - id: "change-standard"
+    name: "Стандартное изменение"
+    description: "Стандартное изменение, 5 рабочих дней"
+    priority: 15
+    condition:
+      type: and
+      conditions:
+        - field: ticketType
+          operator: eq
+          value: change
+        - key: risk
+          operator: lte
+          value: medium
+    action:
+      type: duration
+      duration: P5D
+      timeWindows:
+        - name: business-hours
+          weekDays: [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY]
+          dayStart: "09:00"
+          dayEnd: "18:00"
+          zone: "Europe/Moscow"
+          includeHolidays: false
+    active: true
+
+  - id: "default"
+    name: "SLA по умолчанию"
+    description: "Если не подошло ни одно правило — 24 часа календарных"
+    priority: 999
+    condition:
+      type: true
+    action:
+      type: duration
+      duration: PT24H
+      timeWindows:
+        - name: 24x7
+          weekDays: [MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY]
+          dayStart: "00:00"
+          dayEnd: "23:59:59"
+          zone: "Europe/Moscow"
+          includeHolidays: true
+    active: true

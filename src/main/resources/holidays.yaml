@@ -1,0 +1,55 @@
+# Производственный календарь — праздничные дни
+# type: PUBLIC (нерабочий), TRANSFERRED (перенос), SHORTENED (сокращённый)
+# zone: IANA timezone (по умолчанию Europe/Moscow)
+
+holidays:
+  # Новогодние праздники
+  - date: "2026-01-01"
+    name: "Новый год"
+    type: PUBLIC
+  - date: "2026-01-02"
+    name: "Новый год (2)"
+    type: PUBLIC
+  - date: "2026-01-03"
+    name: "Новый год (3)"
+    type: PUBLIC
+  - date: "2026-01-04"
+    name: "Новый год (4)"
+    type: PUBLIC
+  - date: "2026-01-05"
+    name: "Новый год (5)"
+    type: PUBLIC
+  - date: "2026-01-06"
+    name: "Новый год (6)"
+    type: PUBLIC
+  - date: "2026-01-07"
+    name: "Рождество Христово"
+    type: PUBLIC
+
+  # Февраль
+  - date: "2026-02-23"
+    name: "День защитника Отечества"
+    type: PUBLIC
+
+  # Март
+  - date: "2026-03-08"
+    name: "Международный женский день"
+    type: PUBLIC
+
+  # Май
+  - date: "2026-05-01"
+    name: "Праздник Весны и Труда"
+    type: PUBLIC
+  - date: "2026-05-09"
+    name: "День Победы"
+    type: PUBLIC
+
+  # Июнь
+  - date: "2026-06-12"
+    name: "День России"
+    type: PUBLIC
+
+  # Ноябрь
+  - date: "2026-11-04"
+    name: "День народного единства"
+    type: PUBLIC
