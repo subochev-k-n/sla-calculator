@@ -558,9 +558,13 @@ document.getElementById('saveBtn').addEventListener('click', function() {
   }
   saveCustomScenarios(customs);
 
-  // Добавляем в выпадающий список
+  // Добавляем или обновляем в выпадающем списке
   if (!SCENARIO_MAP[id]) {
     addScenarioToSelect(scenario, true);
+  } else {
+    SCENARIO_MAP[id] = { ...scenario, _custom: true };
+    const opt = document.querySelector('#scenario option[value="' + id + '"]');
+    if (opt) opt.textContent = '✏️ ' + (scenario.name || id);
   }
 
   // Выбираем сохранённый
