@@ -433,7 +433,6 @@ function fillEditor(s) {
 
   // Классификация (длительность — в матрице)
   updateClassificationTags(s);
-  document.getElementById('editCategory').value = s.category || '';
 
   if (mode === 'calendar') {
     applyDaySchedule({MONDAY:{start:'00:00',end:'23:59'},TUESDAY:{start:'00:00',end:'23:59'},WEDNESDAY:{start:'00:00',end:'23:59'},THURSDAY:{start:'00:00',end:'23:59'},FRIDAY:{start:'00:00',end:'23:59'},SATURDAY:{start:'00:00',end:'23:59'},SUNDAY:{start:'00:00',end:'23:59'}});
@@ -532,7 +531,7 @@ document.getElementById('saveBtn').addEventListener('click', function() {
   const isCalendar = document.getElementById('editType').value === 'calendar';
   const id = generateId(name);
   const matrix = collectMatrix();
-  const category = document.getElementById('editCategory').value.trim();
+  const category = '';
 
   // Формируем описание
   const modeLabel = document.getElementById('editType').value === 'calendar' ? '24/7' : 'рабочее время';
