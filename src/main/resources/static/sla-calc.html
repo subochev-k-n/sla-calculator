@@ -6,8 +6,8 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<meta name="version" content="2.3">
-<title>SLA Calculator v2.2</title>
+<meta name="version" content="3.0">
+<title>SLA Calculator v3.0</title>
 <style>
   :root {
     --bg: #f4f6f9;
@@ -143,6 +143,21 @@
           <div class="form-group">
             <label for="startTime">Дата и время начала работы</label>
             <input type="datetime-local" id="startTime" name="startTime" required>
+          </div>
+          <div class="form-group">
+            <label for="startTimeZone">Часовой пояс времени начала</label>
+            <select id="startTimeZone">
+              <option value="Europe/Kaliningrad">Калининград (UTC+2)</option>
+              <option value="Europe/Moscow" selected>Москва (MSK, UTC+3)</option>
+              <option value="Europe/Samara">Самара (UTC+4)</option>
+              <option value="Asia/Yekaterinburg">Екатеринбург (UTC+5)</option>
+              <option value="Asia/Omsk">Омск (UTC+6)</option>
+              <option value="Asia/Krasnoyarsk">Красноярск (UTC+7)</option>
+              <option value="Asia/Irkutsk">Иркутск (UTC+8)</option>
+              <option value="Asia/Vladivostok">Владивосток (UTC+10)</option>
+              <option value="Asia/Kamchatka">Камчатка (UTC+12)</option>
+              <option value="UTC">UTC</option>
+            </select>
           </div>
           <div class="form-group">
             <button type="submit" class="btn-primary" id="calcBtn" style="width:100%">
@@ -524,6 +539,42 @@ function formatDuration(minutes) {
   return parts.join(' ');
 }
 
+// ---- Карта смещений для выбранных часовых поясов ----
+const ZONE_OFFSETS = {
+  'Europe/Kaliningrad':   '+02:00',
+  'Europe/Moscow':        '+03:00',
+  'Europe/Samara':        '+04:00',
+  'Asia/Yekaterinburg':   '+05:00',
+  'Asia/Omsk':            '+06:00',
+  'Asia/Krasnoyarsk':     '+07:00',
+  'Asia/Irkutsk':         '+08:00',
+  'Asia/Vladivostok':     '+10:00',
+  'Asia/Kamchatka':       '+12:00',
+  'UTC':                  '+00:00'
+};
+
+function getZoneOffset(zoneId) {
+  return ZONE_OFFSETS[zoneId] || '+03:00';
+}
+
+// ---- Автоопределение часового пояса пользователя ----
+function detectUserTimeZone() {
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const sel = document.getElementById('startTimeZone');
+  for (const opt of sel.options) {
+    if (opt.value === tz) { opt.selected = true; return; }
+  }
+  // Если точного совпадения нет — выбираем по смещению
+  const offset = -new Date().getTimezoneOffset();
+  const h = Math.floor(Math.abs(offset) / 60);
+  const m = Math.abs(offset) % 60;
+  const sign = offset >= 0 ? '+' : '-';
+  const offsetStr = sign + String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+  for (const opt of sel.options) {
+    if (opt.value.includes(offsetStr.replace(':',''))) { opt.selected = true; return; }
+  }
+}
+
 // ---- Отправка формы расчёта ----
 document.getElementById('slaForm').addEventListener('submit', async function(e) {
   e.preventDefault();
@@ -537,10 +588,10 @@ document.getElementById('slaForm').addEventListener('submit', async function(e) 
   if (!startTimeRaw) { alert('Укажите дату и время начала'); return; }
 
   const localDate = new Date(startTimeRaw);
-  const offset = -localDate.getTimezoneOffset();
-  const sign = offset >= 0 ? '+' : '-';
+  // Используем часовой пояс, выбранный пользователем
+  const selectedZone = document.getElementById('startTimeZone').value;
+  const zone = getZoneOffset(selectedZone);
   const pad2 = n => String(n).padStart(2, '0');
-  const zone = sign + pad2(Math.floor(Math.abs(offset)/60)) + ':' + pad2(Math.abs(offset)%60);
   const startTime = localDate.getFullYear() + '-' +
     pad2(localDate.getMonth()+1) + '-' +
     pad2(localDate.getDate()) + 'T' +
@@ -636,6 +687,9 @@ document.getElementById('startTime').value = now.toISOString().slice(0, 16);
 updateDayTags(['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY']);
 
 loadScenarios();
+
+// Автоопределение часового пояса пользователя
+detectUserTimeZone();
 </script>
 </body>
 </html>
