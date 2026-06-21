@@ -423,10 +423,10 @@ function fillEditor(s) {
   document.getElementById('editDescription').value = s.description || '';
 
   // Тип времени
-  const is247 = s.duration === 'PT4H' && s.ticketType === 'incident' && s.urgency === 'critical'
-    || s.ticketType === 'outage';
-  // Эвристика: если сценарий из сервера — пробуем угадать тип
-  const mode = is247 ? 'calendar' : 'working';
+  let mode = 'working';
+  if (s._custom && s.schedule) { mode = 'custom'; } else {
+    mode = ((s.duration === 'PT4H' && s.ticketType === 'incident' && s.urgency === 'critical') || s.ticketType === 'outage') ? 'calendar' : 'working';
+  }
   document.getElementById('editType').value = mode;
   toggleCustomSchedule(mode);
 
@@ -596,7 +596,10 @@ document.getElementById('editType').addEventListener('change', function() {
     applyDaySchedule({MONDAY:{start:'00:00',end:'23:59'},TUESDAY:{start:'00:00',end:'23:59'},WEDNESDAY:{start:'00:00',end:'23:59'},THURSDAY:{start:'00:00',end:'23:59'},FRIDAY:{start:'00:00',end:'23:59'},SATURDAY:{start:'00:00',end:'23:59'},SUNDAY:{start:'00:00',end:'23:59'}});
   } else if (this.value === 'working') {
     applyDaySchedule({MONDAY:{start:'09:00',end:'18:00'},TUESDAY:{start:'09:00',end:'18:00'},WEDNESDAY:{start:'09:00',end:'18:00'},THURSDAY:{start:'09:00',end:'18:00'},FRIDAY:{start:'09:00',end:'17:00'}});
+  } else if (this.value === 'custom' && document.querySelectorAll('#dayScheduleList .day-check:checked').length === 0) {
+    applyDaySchedule({MONDAY:{start:'09:00',end:'18:00'},TUESDAY:{start:'09:00',end:'18:00'},WEDNESDAY:{start:'09:00',end:'18:00'},THURSDAY:{start:'09:00',end:'18:00'},FRIDAY:{start:'09:00',end:'17:00'}});
   }
+});
 });
 
 // ---- Форматирование длительности ----
