@@ -111,9 +111,19 @@ public class SLAWebController {
                 var p = precision != null && !precision.isBlank() ? precision
                     : durationStr.matches("P\\d+D") ? "DAYS"
                     : durationStr.matches("PT\\d+H") ? "HOURS" : "MINUTES";
-                var action = new io.itsm.sla.model.action.DurationAction(duration,
-                    List.of(io.itsm.sla.model.TimeWindow.aroundTheClock("24/7",
-                        java.time.ZoneId.of("UTC"))), p);
+                var zoneStr = request.get("zone");
+                var zone = zoneStr != null ? java.time.ZoneId.of(zoneStr) : java.time.ZoneId.of("Europe/Moscow");
+                List<io.itsm.sla.model.TimeWindow> windows;
+                var scheduleRaw = request.get("schedule");
+                if (scheduleRaw != null && !scheduleRaw.isBlank()) {
+                    windows = parseSchedule(scheduleRaw, zone);
+                } else if ("DAYS".equals(p)) {
+                    windows = List.of(io.itsm.sla.model.TimeWindow.businessHours("8x5", zone,
+                        java.time.LocalTime.of(9, 0), java.time.LocalTime.of(18, 0)));
+                } else {
+                    windows = List.of(io.itsm.sla.model.TimeWindow.aroundTheClock("24/7", zone));
+                }
+                var action = new io.itsm.sla.model.action.DurationAction(duration, windows, p);
                 deadline = calculator.computeDeadlineDirect(action,
                     scenarioName != null ? scenarioName : "custom", startTime);
             } catch (Exception e) {
@@ -139,5 +149,29 @@ public class SLAWebController {
 
     private static String valueOr(String first, String fallback) {
         return (first != null && !first.isBlank()) ? first : fallback;
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<io.itsm.sla.model.TimeWindow> parseSchedule(String json, java.time.ZoneId zone) {
+        try {
+            var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            mapper.registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
+            var map = mapper.readValue(json, java.util.LinkedHashMap.class);
+            var windows = new java.util.ArrayList<io.itsm.sla.model.TimeWindow>();
+            for (var entry : map.entrySet()) {
+                var e = (java.util.Map.Entry) entry;
+                var day = java.time.DayOfWeek.valueOf((String) e.getKey());
+                var times = (java.util.LinkedHashMap) e.getValue();
+                windows.add(new io.itsm.sla.model.TimeWindow(day.name(), java.util.Set.of(day),
+                    java.time.LocalTime.parse((String) times.get("start")),
+                    java.time.LocalTime.parse((String) times.get("end")),
+                    zone, false, null, null));
+            }
+            return windows;
+        } catch (Exception e) {
+            log.warn("Failed to parse schedule, using 8x5: {}", e.getMessage());
+            return List.of(io.itsm.sla.model.TimeWindow.businessHours("8x5", zone,
+                java.time.LocalTime.of(9, 0), java.time.LocalTime.of(18, 0)));
+        }
     }
 }

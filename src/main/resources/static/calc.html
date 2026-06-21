@@ -701,6 +701,8 @@ document.getElementById('slaForm').addEventListener('submit', async function(e) 
         : scenarioObj.duration && scenarioObj.duration.match(/PT(\d+)H/) ? 'HOURS' : 'MINUTES';
       body.scenarioName = scenarioObj.name || scenarioId;
       body.description = scenarioObj.description || '';
+      body.zone = scenarioObj.tz || 'Europe/Moscow';
+      if (scenarioObj.schedule) body.schedule = JSON.stringify(scenarioObj.schedule);
     } else {
       body.category = scenarioObj.category || '';
       body.description = scenarioObj.description || '';
