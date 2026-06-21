@@ -453,8 +453,9 @@ function toggleCustomSchedule(mode) {
 function collectDaySchedule() {
   const r = {};
   document.querySelectorAll('#dayScheduleList .day-schedule-row').forEach(row => {
-    if (!row.querySelector('.day-check').checked) return;
-    r[row.dataset.day] = {start: row.querySelector('.day-start').value, end: row.querySelector('.day-end').value};
+    if (row.querySelector('.day-check').checked) {
+      r[row.dataset.day] = {start: row.querySelector('.day-start').value, end: row.querySelector('.day-end').value};
+    }
   });
   return r;
 }
@@ -464,9 +465,6 @@ function applyDaySchedule(s) {
     if (s && s[row.dataset.day]) { c.checked=true; st.value=s[row.dataset.day].start||'09:00'; en.value=s[row.dataset.day].end||'18:00'; }
     else { c.checked=false; st.value='09:00'; en.value='18:00'; }
   });
-}
-  return Array.from(document.querySelectorAll('#dayTags .tag-day.active'))
-    .map(el => el.dataset.day);
 }
 
 function getSelectedTypes() { return Array.from(document.querySelectorAll('[data-ctype].active')).map(el => el.dataset.ctype); }
