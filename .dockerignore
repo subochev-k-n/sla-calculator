@@ -3,9 +3,6 @@
 .gradle
 build
 *.md
-gradle/
-gradlew
-gradlew.bat
 .idea
 .vscode
 .settings
