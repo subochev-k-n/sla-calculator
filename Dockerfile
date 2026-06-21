@@ -4,7 +4,7 @@ WORKDIR /build
 COPY gradlew settings.gradle.kts build.gradle.kts ./
 COPY gradle ./gradle
 COPY src ./src
-RUN ./gradlew bootJar --no-daemon
+RUN chmod +x ./gradlew && ./gradlew bootJar --no-daemon
 
 # ---- Run stage ----
 FROM eclipse-temurin:25-jre-alpine
