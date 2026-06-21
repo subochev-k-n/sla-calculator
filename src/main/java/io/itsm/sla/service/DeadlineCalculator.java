@@ -69,6 +69,22 @@ public class DeadlineCalculator {
             .build();
     }
 
+    public SLADeadline computeDeadlineDirect(SLAAction action, String name,
+                                              ZonedDateTime startTime) {
+        log.debug("Computing deadline directly for '{}'", name);
+        var effectiveStart = computeEffectiveStart(action, startTime);
+        var deadline = computeActionDeadline(action, effectiveStart);
+        return SLADeadline.builder()
+            .deadline(deadline)
+            .effectiveStartTime(effectiveStart)
+            .slaRuleId("custom")
+            .slaRuleName(name)
+            .durationMinutes(extractDurationMinutes(action))
+            .compliant(true)
+            .description(name)
+            .build();
+    }
+
     /**
      * Вычислить дедлайн для произвольного действия.
      */

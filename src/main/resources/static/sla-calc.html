@@ -267,27 +267,20 @@
 
         <div class="editor-section">
           <h3>📂 Классификация</h3>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="editTicketType">Тип обращения</label>
-              <select id="editTicketType">
-                <option value="incident">Инцидент</option>
-                <option value="service_request">Запрос на обслуживание</option>
-                <option value="change">Изменение</option>
-                <option value="maintenance">Регламентные работы</option>
-                <option value="outage">Сбой / Недоступность</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="editUrgency">Приоритет</label>
-              <select id="editUrgency">
-                <option value="critical">🔴 Критичный</option>
-                <option value="high">🟠 Высокий</option>
-                <option value="medium">🟡 Средний</option>
-                <option value="low">🟢 Низкий</option>
-                <option value="">— Не задан —</option>
-              </select>
-            </div>
+          <label style="margin-bottom:4px;display:block;font-size:0.8rem;font-weight:500;color:#374151">Типы обращений</label>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">
+            <label class="tag tag-day active" data-ctype="incident">Инцидент</label>
+            <label class="tag tag-day" data-ctype="service_request">Запрос</label>
+            <label class="tag tag-day" data-ctype="change">Изменение</label>
+            <label class="tag tag-day" data-ctype="maintenance">Регламент</label>
+            <label class="tag tag-day" data-ctype="outage">Сбой</label>
+          </div>
+          <label style="margin-bottom:4px;display:block;font-size:0.8rem;font-weight:500;color:#374151">Приоритеты</label>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">
+            <label class="tag tag-day active" data-curgency="critical">🔴 Критичный</label>
+            <label class="tag tag-day" data-curgency="high">🟠 Высокий</label>
+            <label class="tag tag-day" data-curgency="medium">🟡 Средний</label>
+            <label class="tag tag-day" data-curgency="low">🟢 Низкий</label>
           </div>
           <div class="form-group">
             <label for="editCategory">Категория</label>
@@ -375,8 +368,7 @@ function fillEditor(s) {
   document.getElementById('editDurationUnit').value = dur.unit;
 
   // Классификация
-  document.getElementById('editTicketType').value = s.ticketType || 'incident';
-  document.getElementById('editUrgency').value = s.urgency || '';
+  updateClassificationTags(s);
   document.getElementById('editCategory').value = s.category || '';
 
   // Дни недели (по умолчанию Пн-Пт для working, все дни для calendar)
@@ -399,6 +391,15 @@ function updateDayTags(activeDays) {
 function getSelectedDays() {
   return Array.from(document.querySelectorAll('#dayTags .tag-day.active'))
     .map(el => el.dataset.day);
+}
+
+function getSelectedTypes() { return Array.from(document.querySelectorAll('[data-ctype].active')).map(el => el.dataset.ctype); }
+function getSelectedUrgencies() { return Array.from(document.querySelectorAll('[data-curgency].active')).map(el => el.dataset.curgency); }
+function updateClassificationTags(s) {
+  document.querySelectorAll('[data-ctype]').forEach(el => { el.classList.remove('active'); el.classList.add('inactive'); });
+  (s.ticketTypes || (s.ticketType ? [s.ticketType] : ['incident'])).forEach(t => { const el = document.querySelector('[data-ctype="'+t+'"]'); if(el){el.classList.remove('inactive');el.classList.add('active');} });
+  document.querySelectorAll('[data-curgency]').forEach(el => { el.classList.remove('active'); el.classList.add('inactive'); });
+  (s.urgencies || (s.urgency ? [s.urgency] : ['critical'])).forEach(u => { const el = document.querySelector('[data-curgency="'+u+'"]'); if(el){el.classList.remove('inactive');el.classList.add('active');} });
 }
 
 // ---- Парсинг длительности ISO в число + единица ----
@@ -443,11 +444,9 @@ document.getElementById('saveBtn').addEventListener('click', function() {
   if (!name) { alert('Введите название сценария'); return; }
 
   const isCalendar = document.getElementById('editType').value === 'calendar';
-  const isCustom = document.getElementById('editType').value === 'custom';
-
   const id = generateId(name);
-  const ticketType = document.getElementById('editTicketType').value;
-  const urgency = document.getElementById('editUrgency').value;
+  const ticketTypes = getSelectedTypes();
+  const urgencies = getSelectedUrgencies();
   const category = document.getElementById('editCategory').value.trim();
 
   // Формируем описание
@@ -460,8 +459,8 @@ document.getElementById('saveBtn').addEventListener('click', function() {
 
   const scenario = {
     id, name, description: desc,
-    ticketType, urgency, category,
-    duration: buildDurationISO(),
+    ticketTypes, urgencies,
+    category, duration: buildDurationISO(),
     _custom: true
   };
 
@@ -609,14 +608,20 @@ document.getElementById('slaForm').addEventListener('submit', async function(e) 
   const scenarioObj = SCENARIO_MAP[scenarioId];
   const body = { scenarioId, startTime };
 
-  // Всегда передаём полные параметры из редактора (сервер использует их,
-  // если сценарий не предустановленный)
   if (scenarioObj) {
-    body.ticketType = scenarioObj.ticketType || 'incident';
-    body.urgency = scenarioObj.urgency || '';
-    body.category = scenarioObj.category || '';
-    body.description = scenarioObj.description || '';
-    body.scenarioName = scenarioObj.name || scenarioId;
+    if (scenarioObj._custom) {
+      body.duration = scenarioObj.duration || 'PT4H';
+      body.precision = scenarioObj.duration && scenarioObj.duration.match(/P(\d+)D/) ? 'DAYS'
+        : scenarioObj.duration && scenarioObj.duration.match(/PT(\d+)H/) ? 'HOURS' : 'MINUTES';
+      body.scenarioName = scenarioObj.name || scenarioId;
+      body.description = scenarioObj.description || '';
+    } else {
+      body.ticketType = scenarioObj.ticketType || 'incident';
+      body.urgency = scenarioObj.urgency || '';
+      body.category = scenarioObj.category || '';
+      body.description = scenarioObj.description || '';
+      body.scenarioName = scenarioObj.name || scenarioId;
+    }
   }
 
   console.log('[SLA] Sending body:', JSON.stringify(body));

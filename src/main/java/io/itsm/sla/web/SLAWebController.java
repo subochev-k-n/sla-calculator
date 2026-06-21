@@ -68,18 +68,16 @@ public class SLAWebController {
         log.debug("calculateScenario request: {} {}", scenarioId, request);
 
         SLAScenarioDTO scenario = null;
-
         if (scenarioId != null && SCENARIOS.containsKey(scenarioId)) {
             scenario = SCENARIOS.get(scenarioId);
         }
 
-        // Строим контекст из переданных параметров (либо из предустановленного сценария)
         var ticketType = valueOr(request.get("ticketType"),
-            scenario != null ? scenario.ticketType() : "incident");
+            scenario != null ? scenario.ticketType() : null);
         var urgency = valueOr(request.get("urgency"),
-            scenario != null ? scenario.urgency() : "");
+            scenario != null ? scenario.urgency() : null);
         var category = valueOr(request.get("category"),
-            scenario != null ? scenario.category() : "");
+            scenario != null ? scenario.category() : null);
         var description = valueOr(request.get("description"),
             scenario != null ? scenario.description() : "");
         var scenarioName = valueOr(request.get("scenarioName"),
@@ -90,22 +88,37 @@ public class SLAWebController {
             ? ZonedDateTime.parse(startTimeStr)
             : ZonedDateTime.now();
 
-        var attrs = new java.util.HashMap<String, String>();
-        if (urgency != null && !urgency.isBlank()) attrs.put("urgency", urgency);
-        if (category != null && !category.isBlank()) attrs.put("category", category);
-
-        var ctx = SLAContext.builder()
-            .ticketType(ticketType)
-            .attributes(attrs)
-            .build();
-
         SLADeadline deadline;
-        try {
-            deadline = calculator.computeDeadline(ctx, startTime);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of(
-                "error", "Ошибка расчёта: " + e.getMessage()
-            ));
+
+        if (scenario != null) {
+            var attrs = new java.util.HashMap<String, String>();
+            if (urgency != null && !urgency.isBlank()) attrs.put("urgency", urgency);
+            if (category != null && !category.isBlank()) attrs.put("category", category);
+            var ctx = SLAContext.builder().ticketType(ticketType).attributes(attrs).build();
+            try {
+                deadline = calculator.computeDeadline(ctx, startTime);
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Ошибка расчёта: " + e.getMessage()));
+            }
+        } else {
+            var durationStr = request.get("duration");
+            var precision = request.get("precision");
+            if (durationStr == null || durationStr.isBlank()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Укажите duration (P5D, PT4H...)"));
+            }
+            try {
+                var duration = java.time.Duration.parse(durationStr);
+                var p = precision != null && !precision.isBlank() ? precision
+                    : durationStr.matches("P\\d+D") ? "DAYS"
+                    : durationStr.matches("PT\\d+H") ? "HOURS" : "MINUTES";
+                var action = new io.itsm.sla.model.action.DurationAction(duration,
+                    List.of(io.itsm.sla.model.TimeWindow.aroundTheClock("24/7",
+                        java.time.ZoneId.of("UTC"))), p);
+                deadline = calculator.computeDeadlineDirect(action,
+                    scenarioName != null ? scenarioName : "custom", startTime);
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Ошибка расчёта: " + e.getMessage()));
+            }
         }
 
         var fmt = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm (VV)");
