@@ -4,7 +4,13 @@ WORKDIR /build
 COPY gradlew settings.gradle.kts build.gradle.kts ./
 COPY gradle ./gradle
 COPY src ./src
-RUN chmod +x ./gradlew && ./gradlew bootJar --no-daemon
+RUN chmod +x ./gradlew \
+    && WRAPPER_JAR=gradle/wrapper/gradle-wrapper.jar \
+    && if [ ! -f "$WRAPPER_JAR" ]; then \
+         WRAPPER_VERSION=$(grep distributionUrl gradle/wrapper/gradle-wrapper.properties | sed 's/.*gradle-\(.*\)-bin.zip/\1/') \
+         && wget -q -O "$WRAPPER_JAR" "https://raw.githubusercontent.com/gradle/gradle/v${WRAPPER_VERSION}/gradle/wrapper/gradle-wrapper.jar"; \
+       fi \
+    && ./gradlew bootJar --no-daemon
 
 # ---- Run stage ----
 FROM eclipse-temurin:25-jre-alpine
